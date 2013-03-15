@@ -1,4 +1,3 @@
-parse_url-js-
+parse_url for js
 =============
-
-js parse_url
+For more details. Refer to parse_url.html in my epositories pls.
