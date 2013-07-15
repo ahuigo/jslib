@@ -10,7 +10,7 @@
 		query = urlInfo['query'];
 
 		//set params
-		if(query && params[0]!=='&' && '&' !== query[query.length]){
+		if(query && params[0]!=='&' && '&' !== query.substr(-1,1)){
 			params = '&'+params;	
 		}
 
@@ -83,21 +83,7 @@
 		return urlInfo;
 	}
 
-	urls = ['/a/b/c?a=1#c1=2&c2=5',
-	'hilo.com/b/c?a=1#c1=2&c2=5',
-	'http://user:hundan@hilo.com/a/b/c?a=1#c1=2&c2=5',
-	'http://xuehui1@hilo.com/a/b/c?a=1#c1=2&c2=5',
-	'http://hilo.com/a/b/c?a=1#c1=2&c2=5',
-	'hilo.com/a/b/c?a=1#c1=2&c2=5',
-	'http://hilo.com#\'ahui=1',
-	'hilo.com#\'ahui=1',
-	'hilo.com',
-	location.href];
-	obj =new Object;
-	for(i in urls){
-		url = urls[i];
-		newurl = appendUrlParams(url,'var1=test&var2=test2');
-		obj[url]=newurl;
-	}
-	console.log(obj);
+	var url = 'hilo.com/a/b/c?a=1#c1=2&c2=5';
+	newurl = appendUrlParams(url,'var1=test&var2=test2');
+	console.log(newurl);
 </script>
