@@ -83,7 +83,8 @@
 		return urlInfo;
 	}
 
-	var url = 'hilo.com/a/b/c?a=1#c1=2&c2=5';
-	newurl = appendUrlParams(url,'var1=test&var2=test2');
-	console.log(newurl);
+	var url = 'hilo.com/a/b/c?a=1#c1=2&c2=5',
+		urlInfo = parse_url(url),
+		newurl = appendUrlParams(url,'var1=test&var2=test2');
+	console.log(newurl,urlInfo);
 </script>
