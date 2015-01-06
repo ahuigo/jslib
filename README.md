@@ -1,8 +1,8 @@
-parse_url for js
+js lib
 =============
 For more details. Refer to parse_url.html in my epositories pls.
 
-# Uri
+# Url
 ## .parseUrl
 var url = 'hilo.com/a/b/c?a=1#c1=2&c2=5',
 urlInfo = Url.parseUrl(url),
