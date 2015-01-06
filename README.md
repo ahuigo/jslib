@@ -17,8 +17,8 @@ Url.parseStr('a=1&b=2');
 	Cookie.set('a', 1);
 	Cookie.get('a');
 
-# ajax
-	ajax.request('/path');
+# Ajax
+	Ajax.request('/path');
 
 # load
 
