@@ -17,12 +17,13 @@
 		}
 
 		if(func && async){
-			xhr.onreadystatechange= function() {
+			/*xhr.onreadystatechange= function() {
 				if (xhr.readyState==4 && xhr.status==200) {
 					func(xhr.responseText);
-					//var a=xhr.responseText;
-					//console.log(a);
 				}
+			}*/
+			xhr.onload = function() {
+				func(xhr.responseText);
 			}
 		}
 		xhr.send(data);//data: urlencoded / FormData data/ 
