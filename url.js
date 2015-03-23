@@ -5,32 +5,6 @@
 	//var self = Url.prototype;
 	var self = Url;
 	/**
-	 *
-	 */
-	self.addParams = function(oriUrl, params){
-		var url,query;
-
-		//get urlInfo
-		var urlInfo = parseUrl(oriUrl);
-		//console.log(urlInfo);
-
-		//get query
-		query = urlInfo['query'];
-
-		//set params
-		if(query && params[0]!=='&' && '&' !== query.substr(-1,1)){
-			params = '&'+params;	
-		}
-
-		//return url
-		url = '';
-		if(urlInfo['scheme']){
-			url += urlInfo['scheme'] + '://';
-		}
-		url += urlInfo['host'] + urlInfo['path']+'?'+urlInfo['query']+params+'#'+urlInfo['fragment'];
-		return url;
-	}
-	/**
 	 * @params url	eg: 'http://username:password@hilo.com/a/b/c?a=1#c1=2&c2=5';
 	 *				'hilo.com/b/c?a=1#c1=2&c2=5';
 	 *				'/a/b/c?a=1#c1=2&c2=5';
@@ -90,6 +64,32 @@
 		return urlInfo;
 	}
 
+	/**
+	 * addParams
+	 */
+	self.addParams = function(oriUrl, params){
+		var url,query;
+
+		//get urlInfo
+		var urlInfo = self.parseUrl(oriUrl);
+		//console.log(urlInfo);
+
+		//get query
+		query = urlInfo['query'];
+
+		//set params
+		if(query && params[0]!=='&' && '&' !== query.substr(-1,1)){
+			params = '&'+params;	
+		}
+
+		//return url
+		url = '';
+		if(urlInfo['scheme']){
+			url += urlInfo['scheme'] + '://';
+		}
+		url += urlInfo['host'] + urlInfo['path']+'?'+urlInfo['query']+params+'#'+urlInfo['fragment'];
+		return url;
+	}
 	/**
 	 * parseStr('a=1&b=2')
 	 */
