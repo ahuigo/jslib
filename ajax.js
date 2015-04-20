@@ -1,12 +1,16 @@
 /**
  * Refer to https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
  */
+/**
+ * Ajax.request('url','get', '', '', false);
+ */
 (Ajax=function(){
 	//var self = Ajax.prototype;
 	var self = Ajax;
-	var xhr = self.xhr = new XMLHttpRequest();
+	var xhr = self.xhr = new XMLHttpRequest();//self.xhr is static variable
 	self.request = function(url, method, data, func, async){
 		if(async === undefined) async = true; //default to be true
+		if(async === undefined) method = 'get';
 		var urlObj = new Url;
 
 		if(method === 'get' && data){ url = Url.addParams(url, data)}
