@@ -41,7 +41,7 @@ function getMd5(fileNode, callback){
 			console.info("computed hash", spark.end());//the later is not right
 			fileNode.dataset.md5 = md5;
 			if(callback){
-				callback(spark.end());
+				callback(md5);
 			}
 		}
 	};
