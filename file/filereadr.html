@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<input type="file" id="files" multiple/>
+<img id="image" />
+
+The JavaScript code:
+<script>
+document.querySelector('#files').onchange = function (evt) {
+    var files = evt.target.files;
+    for(var i = 0, f; f = files[i]; i++){
+        if(!f.type.match('image.*')) continue;
+        
+        var reader = new FileReader();
+        reader.onload = (function(theFile){
+            return function(e){
+                var img = document.createElement('img');
+                img.title = theFile.name;
+                img.src = e.target.result;
+                document.body.appendChild(img); 
+            }
+        })(f);
+        reader.readAsDataURL(f);
+    }
+}
+</script>
