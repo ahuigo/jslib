@@ -1,5 +1,5 @@
 /**
- *
+ * Url.parseUrl();
  */
 (Url = function (){
 	//var self = Url.prototype;
@@ -30,7 +30,7 @@
 		pos = url.indexOf('://');
 		if(pos>-1){
 			urlInfo['scheme'] = url.substr(0,pos);
-			url = url.substr(pos+3); 
+			url = url.substr(pos+3);
 		}
 
 		//host & user & pass
@@ -79,7 +79,7 @@
 
 		//set params
 		if(query && params[0]!=='&' && '&' !== query.substr(-1,1)){
-			params = '&'+params;	
+			params = '&'+params;
 		}
 
 		//return url
