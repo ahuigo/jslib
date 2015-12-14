@@ -107,7 +107,6 @@ String.prototype.addParams = function(param){
  * @returns {string}
  */
 http_build_query = function (obj, num_prefix, temp_key) {
-
     var output_string = []
 
     Object.keys(obj).forEach(function (val) {
@@ -122,9 +121,7 @@ http_build_query = function (obj, num_prefix, temp_key) {
         if (typeof obj[val] === 'object') {
             var query = build_query(obj[val], null, key)
             output_string.push(query)
-        }
-
-        else {
+        } else if(typeof obj[val] === 'string'){
             var value = encodeURIComponent(obj[val].replace(/[!'()*]/g, escape));
             output_string.push(key + '=' + value)
         }
@@ -147,9 +144,9 @@ String.prototype.parseStr = function (key){
             arr[k] = decodeURIComponent(v);
         }
     }
-	if(key){
-		return arr[key]?arr[key]:'';
-	}
+    if(key){
+       return arr[key]?arr[key]:'';
+    }
     return arr;
 }
 
