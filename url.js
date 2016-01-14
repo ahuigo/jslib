@@ -150,3 +150,29 @@ String.prototype.parseStr = function (key){
     return arr;
 }
 
+function Pager(pager, currentPage, maxPage){
+    var search = '?'+ location.search.substr(1);
+    var matches;
+    if (matches = search.match(/[&?](page=\d+)/)) {
+        search = search.replace(matches[1], '');
+    }
+    var start = currentPage - ((currentPage-1)%10);
+    var end = start+10 > maxPage ? maxPage : start+10;
+    start = start-1 > 0? start -1: 1;
+
+    var ol = $('<ol class="pagination"></ol>');
+    if(start>1){
+        ol.append($('<li><a href="'+search +'&page='+(1)+'">'+(1)+'</a></li>'));
+    }
+    for(var i=start; i<=end; i++){
+        if(i===currentPage){
+            ol.append($('<li><a href="#">'+i+'</a></li>'));
+        }else{
+            ol.append($('<li><a href="'+search +'&page='+i+'">'+i+'</a></li>'));
+        }
+    }
+    if(end<maxPage){
+        ol.append($('<li><a href="'+search +'&page='+maxPage+'">'+maxPage+'</a></li>'));
+    }
+    pager.html('').append(ol);
+}
