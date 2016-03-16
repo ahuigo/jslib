@@ -141,7 +141,7 @@ String.prototype.parseStr = function (key){
         if(queryArr[i]){
             var k = queryArr[i].split('=')[0];
             var v = queryArr[i].split('=')[1] || '';
-            arr[k] = decodeURIComponent(v);
+            arr[k] = decodeURIComponent(v.replace(/\+/g, '%20'));
         }
     }
     if(key){
