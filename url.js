@@ -149,6 +149,11 @@ String.prototype.parseStr = function (key){
     }
     return arr;
 }
+String.prototype.encodeEntities = function (){
+    var textArea = document.createElement('p');
+    textArea.innerText = this;
+    return textArea.innerHTML;
+}
 
 function Pager(pager, currentPage, maxPage){
     var search = '?'+ location.search.substr(1);
