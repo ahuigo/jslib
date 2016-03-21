@@ -5,7 +5,7 @@ function InitForm(data){
 		if(name in data){
 			//if(node.prop('type') === 'radio'){
 		   if(['radio', 'checkbox'].indexOf(node[0].type ) > -1  ) {
-				node.val([data[name]])
+				node.val([data[name]]);//input.checked = true;
 			}else{
 				node.val(data[name])
 			}

@@ -149,6 +149,13 @@ String.prototype.parseStr = function (key){
     }
     return arr;
 }
+/**
+ *
+ *$('<textarea>').html('<a href="" src="">abc</a>').text()
+	"<a href="" src="">abc</a>"
+  $('<textarea>').html('<a href="" src="">abc</a>').html()
+	"&lt;a href="" src=""&gt;abc&lt;/a&gt;"
+ */
 String.prototype.encodeEntities = function (){
     var textArea = document.createElement('p');
     textArea.innerText = this;
