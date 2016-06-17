@@ -174,17 +174,17 @@ function Pager(pager, currentPage, maxPage){
 
     var ol = $('<ol class="pagination"></ol>');
     if(start>1){
-        ol.append($('<li><a href="'+search +'&page='+(1)+'">'+(1)+'</a></li>'));
+        ol.append($('<li><a href="'+search.addParams('page=1')+'">'+(1)+'</a></li>'));
     }
     for(var i=start; i<=end; i++){
         if(i===currentPage){
             ol.append($('<li><a href="#">'+i+'</a></li>'));
         }else{
-            ol.append($('<li><a href="'+search +'&page='+i+'">'+i+'</a></li>'));
+            ol.append($('<li><a href="'+search.addParams('page='+i)+'">'+i+'</a></li>'));
         }
     }
     if(end<maxPage){
-        ol.append($('<li><a href="'+search +'&page='+maxPage+'">'+maxPage+'</a></li>'));
+        ol.append($('<li><a href="'+search.addParams('&page='+maxPage)+'">'+maxPage+'</a></li>'));
     }
     pager.html('').append(ol);
 }
