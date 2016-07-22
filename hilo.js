@@ -33,6 +33,7 @@ function array_values(myObject) {
     return output;
 }
 
+/*date.js*/
 Date.prototype.Format = function (fmt) { //author: meizz 
     var o = {
         "Y": ('0' + (this.getFullYear())).substr(-4), //月份 
