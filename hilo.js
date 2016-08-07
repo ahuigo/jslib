@@ -69,6 +69,8 @@ $(function(){
                 $(input).val(params[input.name]);
             }
             filterParams[input.name] = params[input.name];
+        }else if(input.value){
+            filterParams[input.name] = input.value;
         }
     });
 });
