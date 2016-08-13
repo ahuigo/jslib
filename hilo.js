@@ -1,4 +1,4 @@
-var _hiloTip = ' <style> #Tip{ position: absolute; left: 50%;top: 50%;z-index: 9999; width: 200px;height: 100px; margin-top: -50px;margin-left: -100px; } @keyframes hidden { 100%   { opacity: 0.5;top:0} } .Tip{ animation: hidden 10s forwards; } </style> <div id="Tip" class="alert alert-danger hidden"></div> ';
+var _hiloTip = ' <style> #Tip{ position: fixed; width: 80%; top: 50%; z-index: 9999; margin-left: 10%; } @keyframes hidden { 100%   { opacity: 0.5;top:0} } .Tip{ animation: hidden 10s forwards; } </style> <div id="Tip" class="alert alert-danger hidden"></div> ';
 function alerts(msg){
     console.log(msg);
     var node = $('#Tip');
