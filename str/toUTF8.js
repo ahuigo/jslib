@@ -1,4 +1,4 @@
-avaScript Strings are stored in UTF-16. 
+javaScript Strings are stored in UTF-16. 
 
 function toUTF8Array(str) {
     var utf8 = unescape(encodeURIComponent(str));
