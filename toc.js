@@ -23,7 +23,24 @@ function addToc(event) {
 		h.id = id;
 		h.innerText = id;
 	}
-	document.querySelector('#toc').innerHTML = createToc(toc);
+  document.querySelector('#toc').innerHTML = createToc(toc);
+  document.body.onclick = function(e){
+    e = e || event;
+    var from = findParent('a',e.target || e.srcElement);
+    if (from){
+      e.preventDefault()
+    }
+  }
+}
+
+function findParent(tagname,el){
+  while (el){
+    if ((el.nodeName || el.tagName).toLowerCase()===tagname.toLowerCase()){
+      return el;
+    }
+    el = el.parentNode;
+  }
+  return null;
 }
 
 if(location.pathname.match(/\.md$/)){
