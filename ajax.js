@@ -20,16 +20,9 @@
 			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");//post
 		}
 
-		if(func && async){
-			/*xhr.onreadystatechange= function() {
-				if (xhr.readyState==4 && xhr.status==200) {
-					func(xhr.responseText);
-				}
-			}*/
-			xhr.onload = function() {
-				func(xhr.responseText);
-			}
-		}
+        xhr.onload = function() {
+            func(xhr.responseText);
+        }
 		xhr.send(data);//data: urlencoded / FormData data/ 
 		if(!async){
 			return xhr.responseText;
