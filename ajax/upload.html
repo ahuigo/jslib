@@ -81,14 +81,21 @@
                 }
                 fd.append("file", blobFile);
                 fd.append("file_id", file_id);
+                fd.append("file_size", file.size);
                 xhr = new XMLHttpRequest();
                 xhr.addEventListener("load", function () {
                     var data = JSON.parse(xhr.responseText);
                     console.log(data);
                     if (data['errno'] === 0) {
-                        if (data['next_start'] > start && data['next_start'] < SIZE) {
+                        if (data['next_start'] > start && data['next_start'] < file.size) {
                             uploadFileSlice(data['next_start']);
+                        }else{
+                            $('#res').text(
+                                    data.file_url
+                            );
                         }
+                        var val = data.next_start ? Math.floor(100 * data.next_start/size) : 100;
+                        $('#progress').val(val);
                     }
                 }, false);
                 xhr.upload.addEventListener("progress", uploadProgress, false);
@@ -123,6 +130,9 @@
         <input type="file" name="file" id="file" onchange="fileSelected(this);"/>
         <input type="hidden" name="var" value="value"/>
         <input type="button" id="cancel" value="cancel"/>
+        <pre id="res"></pre>
+        <progress id="progress" max="100" value="0"></progress>
+
     </div>
     <div id="fileName"></div>
     <div id="fileSize"></div>
