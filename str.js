@@ -8,10 +8,10 @@ String.prototype.str_pad = function(len){
 }
 
 /**
- * get_pos
+ * getNthColumnIndex
  */
-String.prototype.get_pos = function(m, i) {
-       return this.split(m, i).join(m).length + m.length;
+String.prototype.getNthColumnIndex= function(m, n) {
+       return this.split(m, n).join(m).length + m.length;
 }
 String.prototype.nthIndex = function(pat, n){
     var L= this.length, i= -1;
@@ -21,19 +21,3 @@ String.prototype.nthIndex = function(pat, n){
     }
     return i;
 }
-/*
-String.prototype.str_pad = function(ch, n) {
-        var pad = '';
-		n = n - this.length;
-		if(n<1) return this;
-        while (true) {
-        	if (n & 1) {
-          	pad += ch;
-          }
-          n >>= 1;
-          if (n) ch += ch;
-          else break;
-        }
-        return pad+this;
-    }
-*/
