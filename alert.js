@@ -1,24 +1,32 @@
-var _hiloTip = '
-<style>
-    #Tip{ position: absolute; left: 50%;top: 50%;z-index: 9999; width: 200px;height: 100px; margin-top: -50px;margin-left: -100px; }
-    @keyframes hidden {
-        100%   { opacity: 0.5;top:0}
-    }
-    .Tip{
-        animation: hidden 10s forwards;
-    }
-</style>
-<div id="Tip" class="alert alert-danger hidden"></div>
-';
-function alerts(msg){
-    console.log(msg);
-    var node = $('#Tip');
-	if(node.length == 0){
-		node = $(_hiloTip);
-		$('body').append(node);
+//Example 浮层:
+
+	Object.prototype.extend = function( defaults) {
+		for (var i in defaults) {
+			if (!this[i]) {
+				this[i] = defaults[i];
+			}
+		}
+	};
+	AddFloatLayer('test', 5);
+	function AddFloatLayer(txt, time) {
+		var node = document.createElement("div");
+		node.innerText = txt;
+		node.style.extend( {
+			position:'fixed',
+			top: '50%',
+			left: '50%',
+			height:'3em',
+			width:'4em',
+			'text-align': 'center',
+			'font-size':'3em',
+			'margin': '-1.5em -2em', /*set to a negative number 1/2 of your height*/
+			border: '1px solid #ccc',
+			'background-color': '#f3f3f3'
+		});
+		document.body.appendChild(node);
+		if(typeof time === 'number'){
+			setTimeout(function(){
+				node.parentNode.removeChild(node);
+			}, time*1000);
+		}
 	}
-    $('#Tip').text(msg).removeClass('hidden').addClass('Tip');
-    setTimeout(function(){
-        node.removeClass('Tip').addClass('hidden');
-    }, 9000);
-}
