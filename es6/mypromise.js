@@ -1,98 +1,148 @@
-const logger = console.log.bind(console.log)
+const logger = console.log.bind(console)
 class MyPromise {
-  constructor(task) {
-    this.root = this
-    this.firing = false
-    this.status = 'pending'
-    this.v = undefined
-    this.sub = []
+    constructor(task) {
+        this.firing = false
+        this.status = 'pending'
+        this.v = undefined
+        this.children_resolved = []
 
-    if (task) {
-      console.log('exec task')
-      task(this.resolve.bind(this), this.reject.bind(this))
-    }
-  }
-  resolve(v) {
-    if(this.status!=='pending') return
-    console.log('resolved: ', v)
-    this.status = 'resolved'
-    this.v = v
-
-    if (!this.firing && this.fnDone) {
-      this.fire()
-    }
-  }
-  reject(v) {
-    if(this.status!=='pending') return
-    this.status = 'rejected'
-    console.log(`${this.status}:`, v)
-    this.v = v
-
-    if (!this.firing && this.root.fnFail) {
-      this.fire()
-    }
-  }
-  fire() {
-    console.log('firing')
-    this.firing = true
-
-    if (this.status !== 'pending' && (this.isDone || this.isFail)){
-      if (this.isDone) {
-        var sub_v = this.fnDone(this.v)
-      } else if (this.isFail) {
-        var sub_v = this.root.fnFail(this.v)
-      }
-      for (let sub_p of this.sub) {
-        sub_p.status = 'resolved'
-        sub_p.v = sub_v
-        if (!sub_p.firing && sub_p.isDone) {
-          sub_p.fire()
+        if (task) {
+            this.children_rejected = []
+            task(this.resolve.bind(this), this.reject.bind(this))
         }
-      }
     }
 
-    this.firing = false
-  }
-  then(fnDone, fnFail) {
-    var sub_p;
-    if (fnFail) {
-      this.root['fnFail'] = fnFail
+    /**
+     * 
+     * @param {*} v 
+     */
+    resolve(v) {
+        if (this.status !== 'pending') return
+        this.status = 'resolved'
+        this.v = v
+
+        if (!this.firing && this.isDone) {
+            for(let child_p of this.children_resolved){
+                child_p.fire(this.v, this.status)
+            }
+        }
     }
-    if (fnDone && typeof (fnDone) === 'function') {
-      this['fnDone'] = fnDone
-      sub_p = new MyPromise()
-      sub_p.root = this.root
-      sub_p.status = this.status
-      sub_p.v = this.v
-      this.sub.push(sub_p)
+
+    /**
+     * reject
+     * @param {*} v 
+     */
+    reject(v) {
+        if (this.status !== 'pending') return
+        this.status = 'rejected'
+        this.v = v
+
+        if (!this.firing && this.isFail) {
+            for(let child_p of this.children_rejected){
+                child_p.fire(this.v, this.status)
+            }
+        }
     }
-    if (!this.firing && this.status != 'pending') {
-      if (this.isDone || this.isFail) {
-        this.fire()
-      }
+
+    /**
+     */
+    fire(v, status) {
+        this.firing = true
+        if(this.parent.isDone){
+            this.v= this.fnDone(v)
+        }else{
+            this.v = this.fnFail(v)
+        }
+        this.status = 'resolved'
+        
+        //var children = this.isDone? this.children_resolved : this.root.children_rejected
+        for (let child_p of this.children_resolved) {
+            child_p.fire(this.v, this.status)
+        }
+
+        this.firing = false
     }
-    return sub_p ? sub_p : this
-  }
-  get isDone() {
-    return this.status === 'resolved' && this.fnDone
-  }
-  get isFail() {
-    return this.status === 'rejected' && this.root.fnFail
-  }
-  catch(fnFail) {
-    return this.then(null, fnFail)
-  }
+
+    findCatchRoot(){
+        var root = this;
+        if(root.hasOwnProperty('fnFail')){
+            return null
+        }
+        while(root.parent && !root.parent.hasOwnProperty('fnFail')){
+            root = root.parent
+        }
+        return root
+    }
+
+    createChild(status){
+        var child_p = new MyPromise()
+        child_p.parent = this
+        child_p.status = status
+        return child_p
+    }
+
+    /**
+     * 
+     * @param {function} fnDone 
+     * @param {function} fnFail 
+     */
+    then(fnDone, fnFail) {
+        var child_p;
+        if (typeof (fnDone) === 'function' || typeof (fnFail) === 'function') {
+
+            if (typeof (fnDone) === 'function' ){
+                child_p = this.createChild()
+
+                child_p.fnDone = fnDone
+                this.children_resolved.push(child_p)
+
+                if ( (this.isDone && child_p.fnDone)) {
+                    child_p.fire(this.v, this.status)
+                }
+            }else{
+                var root = this.findCatchRoot()
+                if(root){
+                    child_p = this.createChild()
+                    child_p.fnFail = fnFail
+                    root.children_rejected.push(child_p)
+
+                    if ( (this.isFail && child_p.fnFail)) {
+                        child_p.fire(this.v, this.status)
+                    }
+                }
+
+                //this.root['fnFail'] = fnFail
+            }
+        }
+        return child_p ? child_p : this
+    }
+    catch(fnFail) {
+        return this.then(null, fnFail)
+    }
+    get isDone() {
+        //return this.status === 'resolved' && !!this.fnDone
+        return this.status === 'resolved' && this.children_resolved.length>0
+    }
+    get isFail() {
+        //return this.status === 'rejected' && !!this.fnFail
+        return this.status === 'rejected' && this.children_rejected && this.children_rejected.length>0
+    }
 }
 
-p=new MyPromise((r, j) => {
-  logger('exec inner task'); 
-  setTimeout(v=>{
-    r(10);j(1)
-  },1000,10);
-}).then(v => { console.log(v + 1); return v + 1 });
-p
-  .then(v => console.log(v + 2))
-  .catch(e => console.log([e + 100]))
-p
-  .then(v => console.log(v + 2))
-  .catch(e => console.log([e + 100]))
+/**
+ * example 
+ */
+p = new MyPromise((r, j) => {
+    logger('exec inner task');
+    console.log('hahah')
+    setTimeout(v => {
+        r(10); 
+        j(0);
+    }, 100, 10);
+})
+
+p.then(v => { console.log(v + 1); return v + 1 });
+p.catch(v => { console.log(v + 10); return v + 1 });
+p.catch(v => { console.log(v + 11); return v + 1 });
+p.catch(v => { console.log(v + 12); return v + 1 });
+p.catch(v => { console.log(v + 14); return v + 15 }).then(v => { console.log(v + 1); return v + 1 });
