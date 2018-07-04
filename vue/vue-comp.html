@@ -1,0 +1,35 @@
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<div id="app" >
+    <select v-model="mod">
+        <option disable value="">请选择</option>
+        <option value="price">价格</option>
+        <option value="volume">成交量</option>
+    </select>
+    <div v-on:change="log">
+        <div v-if="mod" :is="'c-'+mod" :sub="sublist[mod]"></div>
+    </div>
+</div>
+<script>
+Vue.component('c-price', {
+    template: '<div><input :value="sub"></div>',
+      props: [ 'sub' ],
+});
+Vue.component('c-volume', {
+    template: '<div><input :value="sub"></div>',
+      props: [ 'sub' ],
+});
+
+vm = new Vue({ 
+    el: '#app',
+    created: function(){
+    },
+    data: {
+        sublist:{'price':[-1, 50], 'volume':[1,11]},
+        mod:'price',
+    },
+    methods:{log:function(e){
+        console.log(e, e.target)
+    }}
+})
+</script>
+
