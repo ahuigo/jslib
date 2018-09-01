@@ -5,31 +5,21 @@
  *				'hilo.com/b/c?a=1#c1=2&c2=5';
  *				'/a/b/c?a=1#c1=2&c2=5';
  */
-String.prototype.parseUrl = function(){
-    var url=this;
-    var pos,str, urlInfo = {
-        'scheme':'',
-        'user':'',
-        'pass':'',
-        'path':'',
-        'query':'',
-        'fragment':''
-    };
-    //anchor
-    pos = url.indexOf('#');
-    if(pos>-1){
-        urlInfo['fragment'] = url.substr(pos+1);
-        url = url.substr(0,pos);
-    }
 
-    //scheme
+String.prototype.parseUrl = function(){ 
+    var url=this; 
+    var pos,str, urlInfo = { 'scheme':'', 'user':'', 'pass':'', 'path':'', 'query':'', 'fragment':'' }; 
+    pos = url.indexOf('#'); 
+    if(pos>-1){ 
+        urlInfo['fragment'] = url.substr(pos+1); 
+        url = url.substr(0,pos); 
+    } 
     pos = url.indexOf('://');
     if(pos>-1){
         urlInfo['scheme'] = url.substr(0,pos);
         url = url.substr(pos+3);
     }
 
-    //host & user & pass
     var host_pos;
     if( (host_pos = url.indexOf('/')) > -1
         || (host_pos = url.indexOf('?')) > -1
@@ -53,8 +43,7 @@ String.prototype.parseUrl = function(){
     }
     url = url.substr(host_pos);
 
-    //path
-    pos = url.indexOf('?')
+    pos = url.indexOf('?');
     if(pos>-1){
         urlInfo['path'] = url.substr(0,pos);
         urlInfo['query'] = url.substr(pos+1);
@@ -62,7 +51,7 @@ String.prototype.parseUrl = function(){
         urlInfo['path'] = url;
     }
     return urlInfo;
-}
+};
 
 /**
  * addParams
@@ -70,11 +59,8 @@ String.prototype.parseUrl = function(){
 String.prototype.addParams = function(param){
     var url,query;
 
-    //get urlInfo
     var urlInfo = this.parseUrl();
-    //console.log(urlInfo);
 
-    //get query
     query = urlInfo['query'];
    var params = query.parseStr();
 
@@ -87,7 +73,6 @@ String.prototype.addParams = function(param){
     }
     var query = http_build_query(params);
 
-    //return url
     url = '';
     if(urlInfo['scheme']){
         url += urlInfo['scheme'] + '://';
@@ -97,7 +82,7 @@ String.prototype.addParams = function(param){
         url += '#'+urlInfo['fragment'];
     }
     return url;
-}
+};
 
 /**
  *
@@ -107,30 +92,30 @@ String.prototype.addParams = function(param){
  * @returns {string}
  */
 http_build_query = function (obj, num_prefix, temp_key) {
-    var output_string = []
+    var output_string = [];
 
     Object.keys(obj).forEach(function (val) {
 
         var key = val;
 
-        num_prefix && !isNaN(key) ? key = num_prefix + key : ''
+        num_prefix && !isNaN(key) ? key = num_prefix + key : '';
 
         var key = encodeURIComponent(key.replace(/[!'()*]/g, escape));
-        temp_key ? key = temp_key + '[' + key + ']' : ''
+        temp_key ? key = temp_key + '[' + key + ']' : '';
 
         if (typeof obj[val] === 'object') {
-            var query = build_query(obj[val], null, key)
-            output_string.push(query)
+            var query = build_query(obj[val], null, key);
+            output_string.push(query);
         } else if(typeof obj[val] === 'string'){
             var value = encodeURIComponent(obj[val].replace(/[!'()*]/g, escape));
-            output_string.push(key + '=' + value)
+            output_string.push(key + '=' + value);
         }
 
-    })
+    });
 
-    return output_string.join('&')
+    return output_string.join('&');
 
-}
+};
 /**
  * parseStr('a=1&b=2')
  */
@@ -148,7 +133,7 @@ String.prototype.parseStr = function (key){
        return arr[key]?arr[key]:'';
     }
     return arr;
-}
+};
 /**
  *
  *$('<textarea>').html('<a href="" src="">abc</a>').text()
@@ -160,7 +145,7 @@ String.prototype.encodeEntities = function (){
     var textArea = document.createElement('p');
     textArea.innerText = this;
     return textArea.innerHTML;
-}
+};
 
 function Pager(pager, currentPage, maxPage){
     var search = '?'+ location.search.substr(1);
@@ -168,7 +153,7 @@ function Pager(pager, currentPage, maxPage){
     if (matches = search.match(/[&?](page=\d+)/)) {
         search = search.replace(matches[1], '');
     }
-    var start = currentPage - ((currentPage-1)%10);
+    var start = currentPage - ((currentPage-1) % 10);
     var end = start+10 > maxPage ? maxPage : start+10;
     start = start-1 > 0? start -1: 1;
 
