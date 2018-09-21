@@ -1,32 +1,4 @@
 <body oninput="autorun.checked && run()">
-    <script>
-function run(){
-    i.srcdoc=h.value+'<style>'+c.value+'</style><script>'+j.value+'<\/script>';
-}
-function open_page(type){
-    let h = `${i.srcdoc}`;
-    console.log(h);
-    let page = window.open('blank.html');
-    page.document.write(h);
-}
-function copy(type) {
-    var text;
-    if(type === 'page'){
-        text = `data:text/html,${i.srcdoc}`;
-    } else if(type=== 'editor'){
-        text = `data:text/html,${document.documentElement.innerHTML}`;
-    }
-    var input = document.createElement('input');
-    input.setAttribute('value', text);
-    document.body.appendChild(input);
-    input.select();/*textarea.select()*/
-    var result = document.execCommand('copy');
-    document.body.removeChild(input);
-    msg.innerText = `copy ${type} success!`;
-    setTimeout(v=>msg.innertText='',2000);
-    return result;
-}
-    </script>
     <style>
         textarea,iframe{width:100%;height:50%}
         body{margin:0}
@@ -38,7 +10,45 @@ function copy(type) {
     <input type="checkbox" id="autorun" checked> autorun
     <button onclick="run()">run</button>
     <button onclick="open_page('page')">open page</button>
-    <button onclick="copy('page')">copy page</button>
-    <button onclick="copy('editor')">copy editor</button>
+    <button onclick="copy_html('page')">copy page</button>
+    <button onclick="copy_html('editor')">copy editor</button>
     <span style="color:red" id=msg></span>
-<iframe id=i>
+<iframe id=i></iframe>
+<script>
+function run(){
+    i.srcdoc=h.value+'<style>'+c.value+'</style><script>'+j.value+'<\/script>';
+}
+function open_page(type){
+    let h = `${i.srcdoc}`;
+    console.log(h);
+    let page = window.open('blank.html');
+    page.document.write(h);
+}
+function copy_html(type){
+    if(type === 'page'){
+        text = `${i.srcdoc}`;
+    } else if(type=== 'editor'){
+        let srcdoc = i.srcdoc;
+        i.srcdoc = '';
+        for(let node of [h,c,j]){
+            node.innerText = node.value;
+        }
+        text = `data:text/html,${document.documentElement.innerHTML}`;
+        i.srcdoc = srcdoc;
+    }
+    if(copy(text)){
+        msg.innerText = `copy ${type} success!`;
+        setTimeout(v=>msg.innerText='',1000);
+    }
+}
+function copy(text) {
+    var node = document.createElement('textarea');
+    node.innerHTML = text;
+    document.body.appendChild(node);
+    node.select();
+    var result = document.execCommand('copy');
+    document.body.removeChild(node)
+    return result;//true
+}
+run()
+</script>
