@@ -406,8 +406,8 @@ function copy(text) {
     document.body.appendChild(node);
     node.select();
     var result = document.execCommand('copy');
-    document.body.removeChild(node)
-    return result;//true
+    document.body.removeChild(node);
+    return result;
 }
 run()
 </script>
