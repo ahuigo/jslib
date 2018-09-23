@@ -22,11 +22,7 @@
 <script>
 let cdnjs = {
     'dexie': 'https://unpkg.com/dexie@latest/dist/dexie.js',
-}
-function loadjs(target){
-    let src = cdnjs[target.innerText];
-    h.value = `<script src="${src}"></`+`script>`+ h.value;
-}
+};
 document.addEventListener('keydown', e=>{
     if (e.keyCode === 9 && e.target.tagName === 'TEXTAREA') {
         var target = e.target;   
@@ -36,9 +32,13 @@ document.addEventListener('keydown', e=>{
         target.selectionStart = target.selectionEnd = start + 1;
         e.preventDefault();
     }else if(e.key==='F5'){
-        run()
+        run();
     }
-})
+});
+function loadjs(target){
+    let src = cdnjs[target.innerText];
+    h.value = `<script src="${src}"></`+`script>`+ h.value;
+}
 function run(){
     i.srcdoc=h.value+'<style>'+c.value+'</style><script>'+j.value+'<\/script>';
 }
