@@ -1,20 +1,41 @@
 <body oninput="autorun.checked && run()">
     <style>
-        textarea,iframe{width:100%;height:50%}
+        textarea,iframe{width:49%;height:48%}
         body{margin:0}
-        textarea{width:33%;font-size:18}
+        textarea{width:49%;font-size:18}
     </style>
     <textarea placeholder=HTML id=h></textarea>
     <textarea placeholder=CSS id=c></textarea>
-    <textarea placeholder=JS id=j></textarea>
-    <input type="checkbox" id="autorun" checked> autorun
-    <button onclick="run()">run</button>
-    <button onclick="open_page('page')">open page</button>
-    <button onclick="copy_html('page')">copy page</button>
-    <button onclick="copy_html('editor')">copy editor</button>
+    <div>
+    <button onclick="loadjs(this)">dexie</button>
+    <input type="checkbox" id="autorun" checked> AutoRun
+    <button onclick="run()">Run</button>
+    <button onclick="open_page('page')">Open Page</button>
+    <button onclick="copy_html('page')">Copy Page</button>
+    <button onclick="copy_html('editor')">Copy Editor</button>
     <span style="color:red" id=msg></span>
+    MacOSX Tips: Ctrl+A:Head, Ctrl+E:End, Ctrl+F:Right, Ctrl+B:Left, Ctrl+N:Next Line, Ctrl+P: Previous Line
+    </div>
+    <textarea placeholder=JS id=j></textarea>
 <iframe id=i></iframe>
 <script>
+let cdnjs = {
+    'dexie': 'https://unpkg.com/dexie@latest/dist/dexie.js',
+}
+function loadjs(target){
+    let src = cdnjs[target.innerText];
+    h.value = `<script src="${src}"></`+`script>`+ h.value;
+}
+document.addEventListener('keydown', e=>{
+    if (e.keyCode === 9 && e.target.tagName === 'TEXTAREA') {
+        var target = e.target;   
+        var start = target.selectionStart;   
+        var end = target.selectionEnd;
+        target.value=target.value.slice(0, start) + "\t" + target.value.slice(end);
+        target.selectionStart = target.selectionEnd = start + 1;
+        e.preventDefault();
+    }
+})
 function run(){
     i.srcdoc=h.value+'<style>'+c.value+'</style><script>'+j.value+'<\/script>';
 }
@@ -38,7 +59,7 @@ function copy_html(type){
     }
     if(copy(text)){
         msg.innerText = `copy ${type} success!`;
-        setTimeout(v=>msg.innerText='',1000);
+        setTimeout(v=>msg.innerText='',2000);
     }
 }
 function copy(text) {
