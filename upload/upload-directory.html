@@ -1,0 +1,16 @@
+<p>HTML5 input new features : </p>
+<hr>
+<p>Directory: <input type="file" webkitdirectory mozdirectory /></p>
+<p>Directory & accept: <input type="file" webkitdirectory mozdirectory accept="image/*" /></p>
+<p>Multiple: <input type="file" multiple /></p>
+<p>Multiple & accept: <input type="file" multiple accept="image/*" /></p>
+
+
+<script>
+var iptEls = document.querySelectorAll('input');
+[].forEach.call(iptEls, function(iptEl) {
+    iptEl.onchange = function(e) {
+        console.log(this.files);
+    };
+});
+</script>
