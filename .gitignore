@@ -1,4 +1,5 @@
 *.tmp
+jsdemo/
 tmp
 pri
 Gemfile.lock
