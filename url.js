@@ -83,18 +83,17 @@ String.prototype.addParams = function(param){
     }
     return url;
 };
-
 /**
  *
- * @param obj
+ * @param params
  * @param num_prefix
  * @param temp_key
  * @returns {string}
  */
-http_build_query = function (obj, num_prefix, temp_key) {
+http_build_query = function (params, num_prefix, temp_key) {
     var output_string = [];
 
-    Object.keys(obj).forEach(function (val) {
+    Object.keys(params).forEach(function (val) {
 
         var key = val;
 
@@ -103,11 +102,11 @@ http_build_query = function (obj, num_prefix, temp_key) {
         var key = encodeURIComponent(key.replace(/[!'()*]/g, escape));
         temp_key ? key = temp_key + '[' + key + ']' : '';
 
-        if (typeof obj[val] === 'object') {
-            var query = build_query(obj[val], null, key);
+        if (typeof params[val] === 'object') {
+            var query = build_query(params[val], null, key);
             output_string.push(query);
-        } else if(typeof obj[val] === 'string'){
-            var value = encodeURIComponent(obj[val].replace(/[!'()*]/g, escape));
+        } else if(typeof params[val] === 'string'){
+            var value = encodeURIComponent(params[val].replace(/[!'()*]/g, escape));
             output_string.push(key + '=' + value);
         }
 
@@ -116,6 +115,7 @@ http_build_query = function (obj, num_prefix, temp_key) {
     return output_string.join('&');
 
 };
+
 /**
  * parseStr('a=1&b=2')
  */
