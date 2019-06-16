@@ -1,5 +1,5 @@
 /**
- * Created by hilojack on 7/12/15.
+ * Created by ahuigo on 7/12/15.
  * Url.parseUrl();
  * @params url	eg: 'http://username:password@hilo.com/a/b/c?a=1#c1=2&c2=5';
  *				'hilo.com/b/c?a=1#c1=2&c2=5';
