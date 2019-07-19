@@ -24,9 +24,9 @@ class Ajax {
     api.data = data
     api.type = 'json'
     api.options = {
-      ...api.options, ...options, ...{
-        method: method.toUpperCase(),
-      }
+      ...api.options, ...options,
+      method: method.toUpperCase(),
+      credentials: 'include',
     }
     return api;
   }
@@ -53,7 +53,6 @@ class Ajax {
       if (options.method === 'GET') {
         this.url = this.buildUri(this.url, this.buildQuery(this.data))
       } else {
-        options['credentials'] = 'include';
         options['mode'] = 'cors';
         switch (this.type) {
           case 'form':
@@ -110,8 +109,11 @@ class Ajax {
     this.prepareReq()
     return new Promise((resolve, reject) => {
       window.ahuiid++
-      console.debug('ahuiid request count:', window.ahuiid)
+      console.debug('Debug request count:', window.ahuiid)
       fetch(this.url, this.options).then(async (response) => {
+        if (response.status === 401) {
+          this.login()
+        }
         if (!response.ok) {
           throw Error(response.statusText);
         }
@@ -125,6 +127,14 @@ class Ajax {
         }
       })
     })
+  }
+
+  login() {
+    if (document.location.host.split(':')[0].endsWith('.baidu.com') || true) {
+      var url = 'http://login.com/?url=' + encodeURIComponent(document.location.href)
+      document.location.href = url
+    } else {
+    }
   }
 
   /**
