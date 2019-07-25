@@ -1,4 +1,5 @@
 import osmtogeojson from 'osmtogeojson';
+import Notify from 'util/ui/Notify';
 import User from 'api/User';
 
 /**
@@ -98,13 +99,6 @@ class Ajax {
     }
 
     /**
-     * 开启error reject
-     */
-    enableReject() {
-        this.hasRejected = true;
-    }
-
-    /**
      *
      * @param {Function} successHandler
      * @returns Promise<any>
@@ -120,14 +114,12 @@ class Ajax {
 
                 res = await this.parseResponse(response)
                 if (!response.ok) {
-                    throw (res)
+                    throw (res && res.message) ? res : new Error(JSON.stringify(res))
                 }
                 resolve(successHandler ? successHandler(res) : res)
             }).catch(e => {
-                this.error(e.message || e, e);
-                if (this.hasRejected) {
-                    reject(e)
-                }
+                this.error(e);
+                reject(e)
             })
         })
     }
@@ -152,7 +144,12 @@ class Ajax {
             } else if (contentType.indexOf('json') > -1) {
                 res = await response.json();
             } else {
-                res = await response.text();
+                let res_tmp = await response.text();
+                try {
+                    res = JSON.parse(res_tmp)
+                } catch (e) {
+                    res = res_tmp
+                }
             }
         }
         return res;
@@ -280,12 +277,17 @@ class Ajax {
      * @param {*} msg
      * @param {*} data
      */
-    error(msg, data) {
-        console.error(data);
+    error(e) {
+        console.debug({ error: e });
         if (this.noPopupError) {
             return;
         }
-        Notify.error(msg);
+        if (e && e.message) {
+            Notify.error(e.message);
+        } else {
+            Notify.error(e);
+        }
     }
 }
+window.Ajax = Ajax
 export default Ajax;
