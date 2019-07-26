@@ -103,7 +103,7 @@ class Ajax {
      * @param {Function} successHandler
      * @returns Promise<any>
      */
-    then(successHandler) {
+    then(successHandler, errorHandler) {
         this.prepareReq();
         return new Promise((resolve, reject) => {
             fetch(this.url, this.options).then(async (response) => {
@@ -119,9 +119,15 @@ class Ajax {
                 resolve(successHandler ? successHandler(res) : res)
             }).catch(e => {
                 this.error(e);
+                if (errorHandler) {
+                    return resolve(errorHandler(e))
+                }
                 reject(e)
             })
         })
+    }
+    catch(errorHandler) {
+        return this.then(null, errorHandler)
     }
 
 
@@ -228,9 +234,10 @@ class Ajax {
         }
         return Object.entries(params)
             .map(([key, value]) => {
-                return (
-                    encodeURIComponent(key) + '=' + encodeURIComponent(value)
-                );
+                if (value instanceof Date) {
+                    return encodeURIComponent(key) + '=' + value.toISOString()
+                }
+                return encodeURIComponent(key) + '=' + encodeURIComponent(value);
             })
             .join('&');
     }
@@ -291,3 +298,4 @@ class Ajax {
 }
 window.Ajax = Ajax
 export default Ajax;
+
