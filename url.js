@@ -122,12 +122,10 @@ http_build_query = function (params, num_prefix, temp_key) {
 String.prototype.parseStr = function (key){
     var queryArr = this.replace(/^[&?]/, '') .replace(/&$/, '').split('&');
     var arr = {};
-    for(var i in queryArr){
-        if(queryArr[i]){
-            var k = queryArr[i].split('=')[0];
-            var v = queryArr[i].split('=')[1] || '';
-            arr[k] = decodeURIComponent(v.replace(/\+/g, '%20'));
-        }
+    for(var seg of queryArr){
+        var k = seg.split('=')[0];
+        var v = seg.split('=')[1] || '';
+        arr[k] = decodeURIComponent(v.replace(/\+/g, '%20'));
     }
     if(key){
        return arr[key]?arr[key]:'';
