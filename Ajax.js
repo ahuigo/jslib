@@ -129,6 +129,12 @@ class Ajax {
     catch(errorHandler) {
         return this.then(null, errorHandler)
     }
+    /**
+     * 
+     */
+    exec() {
+        return this.then(d => d)
+    }
 
 
     /**

@@ -1,0 +1,43 @@
+<html>
+        <video controls autoplay id="video" width="1200"  style="margin-top:15px;">
+            <source src="file:///Users/ahui/Downloads/jysp.mp4" type="video/mp4" />
+        </video>
+        <br>
+        <input onchange="play()" id="src" value="file:///Users/ahui/Downloads/jysp.mp4">
+        <input id="speed" value="2" onchange="v.playbackRate=(this.value)">
+        <button type="button" onclick="play()"> play</button>
+        <button type="button" onclick="v.pause()"> pause</button>
+
+    <script>
+        var $ = document.querySelector.bind(document)
+        v = $('#video')
+        function play(){
+            console.log('play')
+            v.src = $('#src').value
+            v.load()
+            v.playbackRate = $('#speed').value||2;
+            v.play();
+            //v.pause();
+            //v.load();
+            //document.querySelector('video').defaultPlaybackRate = 2.0;
+        }
+
+    window.onkeydown=e=>{
+        console.log(e.key,e.code,e)
+        if(e.key==='ArrowRight'){
+            v.playbackRate *=2 
+        }
+        if(e.code==='Space' || e.code==="ArrowDown"){
+            //v.playbackRate =1 
+        }
+        if(e.key==='ArrowLeft'){
+            if(v.playbackRate >1) {
+                v.playbackRate =1
+            }else{
+            v.currentTime -= 10
+            }
+        }
+    }
+
+    </script>
+</html>
