@@ -1,43 +1,59 @@
 <html>
-        <video controls autoplay id="video" width="1200"  style="margin-top:15px;">
-            <source src="file:///Users/ahui/Downloads/jysp.mp4" type="video/mp4" />
+    <body style="background:black">
+        <video controls autoplay id="video" width="100%" height="95%"  style="margin-top:0px;">
+            <source src="file:///Users/hilojack/Downloads/hx.mp4" type="video/mp4" />
         </video>
         <br>
-        <input onchange="play()" id="src" value="file:///Users/ahui/Downloads/jysp.mp4">
+        <input onchange="play()" id="src" value="file:///Users/hilojack/Downloads/kbj.mp4">
         <input id="speed" value="2" onchange="v.playbackRate=(this.value)">
         <button type="button" onclick="play()"> play</button>
         <button type="button" onclick="v.pause()"> pause</button>
+        <span id="info" style="color:red"></span>
+    </body>
 
     <script>
         var $ = document.querySelector.bind(document)
-        v = $('#video')
-        function play(){
-            console.log('play')
-            v.src = $('#src').value
-            v.load()
-            v.playbackRate = $('#speed').value||2;
-            v.play();
-            //v.pause();
-            //v.load();
-            //document.querySelector('video').defaultPlaybackRate = 2.0;
-        }
+v = $('#video')
+info = $('#info')
+function play(){
+    console.log('play')
+    v.src = $('#src').value
+    v.load()
+    v.playbackRate = $('#speed').value||2;
+    v.play();
+    //v.pause();
+    //v.load();
+    //document.querySelector('video').defaultPlaybackRate = 2.0;
+}
 
-    window.onkeydown=e=>{
-        console.log(e.key,e.code,e)
-        if(e.key==='ArrowRight'){
-            v.playbackRate *=2 
-        }
-        if(e.code==='Space' || e.code==="ArrowDown"){
-            //v.playbackRate =1 
-        }
-        if(e.key==='ArrowLeft'){
-            if(v.playbackRate >1) {
-                v.playbackRate =1
-            }else{
-            v.currentTime -= 10
+const onkeydown=e=>{
+    console.log(e.key,e.code,e)
+    if(e.key==='ArrowRight'){
+        v.playbackRate *=2
+        e.preventDefault()
+    }
+    if(e.code==='Space' || e.code==="ArrowDown"){
+        v.playbackRate =1
+        if(e.code==="ArrowDown"){
+            if(v.paused){
+                v.play();
+            } else{
+                v.pause();
             }
         }
+        e.preventDefault()
     }
+    if(e.key==='ArrowLeft'){
+        if(v.playbackRate >1) {
+            v.playbackRate =1
+        }else{
+            v.currentTime -= 5
+        }
+        e.preventDefault()
+    }
+    info.innerText = ''+v.playbackRate
+}
+window.addEventListener('keydown', onkeydown, false)
 
     </script>
 </html>
