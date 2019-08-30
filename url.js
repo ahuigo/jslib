@@ -30,14 +30,15 @@ String.prototype.parseUrl = function(){
         host_str = url;
     }
 
-    if((at_pos = host_str.indexOf('@'))>-1){
-        urlInfo['host'] = host_str.substr(at_pos+1);
-        str = host_str.substr(0,at_pos).split(':');
-        urlInfo['user'] = str[0];
-        urlInfo['pass'] = str[1] ? str[1] :'';
-    }else{
-        urlInfo['host'] = host_str;
+    if ((at_pos = host_str.indexOf('@')) > -1) {
+        const [user, pass] = host_str.substr(0, at_pos).split(':');
+        urlInfo['user'] = user
+        urlInfo['pass'] = pass
+        host_str = host_str.substr(at_pos + 1);
     }
+    const [host, port] = host_str.split(':')
+    urlInfo['host'] = host;
+    urlInfo['port'] = port?port:80;
     if(-1 == host_pos){
         return urlInfo;
     }
