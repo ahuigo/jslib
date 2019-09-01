@@ -1,7 +1,7 @@
 <html>
     <body style="background:black">
         <video controls autoplay id="video" width="100%" height="95%"  style="margin-top:0px;">
-            <source src="file:///Users/hilojack/Downloads/hx.mp4" type="video/mp4" />
+            <source src="file:///Users/ahui/Downloads/hx.mp4" type="video/mp4" />
         </video>
         <br>
         <input onchange="play()" id="src" value="file:///Users/hilojack/Downloads/kbj.mp4">
@@ -28,32 +28,44 @@ function play(){
 
 const onkeydown=e=>{
     console.log(e.key,e.code,e)
-    if(e.key==='ArrowRight'){
-        v.playbackRate *=2
-        e.preventDefault()
-    }
-    if(e.code==='Space' || e.code==="ArrowDown"){
-        v.playbackRate =1
-        if(e.code==="ArrowDown"){
-            if(v.paused){
-                v.play();
-            } else{
-                v.pause();
-            }
+    //e.preventDefault()
+    if(e.key==='ArrowUp'){
+        if(v.playbackRate<1.99){
+            v.playbackRate +=0.2
+        }else if(v.playbackRate<16){
+            v.playbackRate =Math.round(v.playbackRate *2)
         }
+    }
+
+    if(e.code==="ArrowDown"){
+        if(v.playbackRate <=1.01) {
+            v.playbackRate =1
+        }else if (v.playbackRate<2.01){
+            v.playbackRate -=.2
+        }else {
+            v.playbackRate /=2
+        }
+    }
+    if(e.key==='ArrowRight'){
+        if(!e.repeat ) v.currentTime -= 80
+        v.currentTime += 5*v.playbackRate
         e.preventDefault()
     }
     if(e.key==='ArrowLeft'){
-        if(v.playbackRate >1) {
-            v.playbackRate =1
-        }else{
-            v.currentTime -= 5
+        if(!e.repeat) {
+           v.currentTime += Math.min(v.currentTime, 80)
         }
+        console.log(5*v.playbackRate)
+        v.currentTime -= 5*v.playbackRate
         e.preventDefault()
+    }
+    if(e.code==='Space' ){
+        //v.playbackRate =1
     }
     info.innerText = ''+v.playbackRate
 }
-window.addEventListener('keydown', onkeydown, false)
+v.addEventListener('keydown', onkeydown, false)
+//window.addEventListener('keyup', onkeydown, false)
 
     </script>
 </html>
