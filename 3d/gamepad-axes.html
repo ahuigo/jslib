@@ -1,0 +1,66 @@
+<body>
+<div id="gamepad0">
+    <h1 id="id"></h1>
+    <div class="axes">
+        leftRight:<progress id="leftRight" class="axis" max="2" value="1">0: 0.0000</progress>
+        zoom:<progress id="zoom" class="axis" max="2" value="1">1: 0.0000</progress>
+        upDown: <progress id="upDown" class="axis" max="2" value="1">1: 0.0000</progress>
+        rotateX:<progress id="rotateX" class="axis" max="2" value="1">1: 0.0000</progress>
+        rotateY:<progress id="rotateY" class="axis" max="2" value="1">1: 0.0000</progress>
+        rotateZ:<progress id="rotateZ" class="axis" max="2" value="1">1: 0.0000</progress>
+    </div>
+</div>
+</body>
+<script>
+// Refer Doc: https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API/Using_the_Gamepad_API
+    class GamepadHandler {
+        constructor(){
+            this.handlers = []
+            // 连接
+            window.addEventListener("gamepadconnected", e=>{
+                  this.updateStatus();
+            });
+            // 解除
+            window.addEventListener("gamepaddisconnected", e=>{
+                this.handlers = []
+                console.log('disconnect gamepad', e.gamepad)
+            });
+        }
+
+        updateStatus = ()=>{
+            var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+            var gamepad = gamepads[0]
+            if(gamepad){
+                const statuses = {
+                    'leftRight': gamepad.axes[0],
+                    'zoom': gamepad.axes[1],
+                    'upDown': gamepad.axes[2],
+                    'rotateX': gamepad.axes[3], //Tilt on X axis
+                    'rotateY': gamepad.axes[5], //Rotate on Y axis
+                    'rotateZ': gamepad.axes[4], //Rotate on Z axis
+                }
+                for(let handler of this.handlers){
+                    handler(statuses)
+                }
+               requestAnimationFrame(this.updateStatus)
+            }
+        }
+
+        addAxesListener(handler){
+            this.handlers.push(handler)
+            return this;
+        }
+    }
+
+new GamepadHandler().addAxesListener(statuses=>{
+    leftRight.setAttribute("value", statuses.leftRight+1)
+    zoom.setAttribute("value", statuses.zoom+1)
+    upDown.setAttribute("value", statuses.upDown+1)
+    rotateX.setAttribute("value", statuses.rotateX+1)
+    rotateY.setAttribute("value", statuses.rotateY+1)
+    rotateZ.setAttribute("value", statuses.rotateZ+1)
+})
+
+
+
+</script>
