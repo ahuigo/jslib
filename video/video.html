@@ -1,14 +1,15 @@
 <html>
-    <body style="background:black">
+    <body style="background:black;color:red">
         <video controls autoplay id="video" width="100%" height="95%"  style="margin-top:0px;">
-            <source src="file:///Users/ahui/Downloads/hx.mp4" type="video/mp4" />
+            <source src="../../../Downloads/hx.mp4" type="video/mp4" />
         </video>
         <br>
-        <input onchange="play()" id="src" value="file:///Users/hilojack/Downloads/kbj.mp4">
+        <input onchange="play()" id="src" value="file:///Users/hilojack/Downloads/hx.mp4">
         <input id="speed" value="2" onchange="v.playbackRate=(this.value)">
         <button type="button" onclick="play()"> play</button>
         <button type="button" onclick="v.pause()"> pause</button>
         <span id="info" style="color:red"></span>
+        <div id=div>div<div>b</div></div>
     </body>
 
     <script>
@@ -25,9 +26,15 @@ function play(){
     //v.load();
     //document.querySelector('video').defaultPlaybackRate = 2.0;
 }
+function p(a){
+    console.log(JSON.stringify(a))
+}
 
 const onkeydown=e=>{
+    p(e)
     console.log(e.key,e.code,e)
+
+    const step = v.duration/100
     //e.preventDefault()
     if(e.key==='ArrowUp'){
         if(v.playbackRate<1.99){
@@ -47,13 +54,15 @@ const onkeydown=e=>{
         }
     }
     if(e.key==='ArrowRight'){
-        if(!e.repeat ) v.currentTime -= 80
+        console.log(v.currentTime, step)
+        if(!e.repeat ) v.currentTime -= step
         v.currentTime += 5*v.playbackRate
         e.preventDefault()
     }
     if(e.key==='ArrowLeft'){
+       console.log(v.currentTime)
         if(!e.repeat) {
-           v.currentTime += Math.min(v.currentTime, 80)
+           v.currentTime += Math.min(v.currentTime, step)
         }
         console.log(5*v.playbackRate)
         v.currentTime -= 5*v.playbackRate
@@ -61,10 +70,26 @@ const onkeydown=e=>{
     }
     if(e.code==='Space' ){
         //v.playbackRate =1
+        //v.play()
     }
+    //e.stopPropagation()
+    e.stopImmediatePropagation()
     info.innerText = ''+v.playbackRate
+    return e
 }
-v.addEventListener('keydown', onkeydown, false)
+const h=m=>{
+    return (e)=>{
+        console.log(m)
+        e.stopImmediatePropagation()
+        e.preventDefault()
+        e.stopPropagation()
+        console.log(e)
+    }
+}
+div.addEventListener('click', h(1), true)
+div.addEventListener('click', h(2), false)
+div.addEventListener('click', h(3), true)
+v.addEventListener('keydown', onkeydown, true)
 //window.addEventListener('keyup', onkeydown, false)
 
     </script>
