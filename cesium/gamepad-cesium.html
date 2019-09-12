@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="https://cesiumjs.org/releases/1.61/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesiumjs.org/releases/1.61/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <div id="cesiumContainer" style="width: 700px; height:400px"></div>
+  <script>
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmM2JkZGI3Mi02ZDZkLTQ3Y2UtODk4OC0xMTQ0YjJmMTg5YTciLCJpZCI6MTU1MTcsInNjb3BlcyI6WyJhc2wiLCJhc3IiLCJhc3ciLCJnYyJdLCJpYXQiOjE1NjgxMTg1ODN9.8NwS-ZfPFGPAZm_S-Z-UGDIhaHIvYAH4IsvOH3BIh1Y';
+
+var viewer = new Cesium.Viewer('cesiumContainer');
+
+(function(views){
+
+var scene = viewer.scene;
+var canvas = viewer.canvas;
+window.canvas = canvas;
+canvas.setAttribute('tabindex', '0'); // put focus on the canvas
+canvas.onclick = function() {
+    canvas.focus();
+};
+var ellipsoid = scene.globe.ellipsoid;
+
+// disable the default event handlers
+scene.screenSpaceCameraController.enableRotate = false;
+scene.screenSpaceCameraController.enableTranslate = false;
+scene.screenSpaceCameraController.enableZoom = false;
+scene.screenSpaceCameraController.enableTilt = false;
+scene.screenSpaceCameraController.enableLook = false;
+
+var startMousePosition;
+var mousePosition;
+var flags = {
+    looking : false,
+    moveForward : false,
+    moveBackward : false,
+    moveUp : false,
+    moveDown : false,
+    moveLeft : false,
+    moveRight : false
+};
+
+var handler = new Cesium.ScreenSpaceEventHandler(canvas);
+
+handler.setInputAction(function(movement) {
+    flags.looking = true;
+    mousePosition = startMousePosition = Cesium.Cartesian3.clone(movement.position);
+}, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+
+handler.setInputAction(function(movement) {
+    mousePosition = movement.endPosition;
+}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+handler.setInputAction(function(position) {
+    flags.looking = false;
+}, Cesium.ScreenSpaceEventType.LEFT_UP);
+
+function getFlagForKeyCode(keyCode) {
+    switch (keyCode) {
+    case 'W'.charCodeAt(0):
+        return 'moveForward';
+    case 'S'.charCodeAt(0):
+        return 'moveBackward';
+    case 'Q'.charCodeAt(0):
+        return 'moveUp';
+    case 'E'.charCodeAt(0):
+        return 'moveDown';
+    case 'D'.charCodeAt(0):
+        return 'moveRight';
+    case 'A'.charCodeAt(0):
+        return 'moveLeft';
+    default:
+        return undefined;
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    var flagName = getFlagForKeyCode(e.keyCode);
+    if (typeof flagName !== 'undefined') {
+        flags[flagName] = true;
+    }
+}, false);
+
+document.addEventListener('keyup', function(e) {
+    var flagName = getFlagForKeyCode(e.keyCode);
+    if (typeof flagName !== 'undefined') {
+        flags[flagName] = false;
+    }
+}, false);
+
+    class GamepadHandler {
+        constructor(){
+            this.handlers = []
+            // 连接
+            window.addEventListener("gamepadconnected", e=>{
+                  this.updateStatus();
+            });
+            // 解除
+            window.addEventListener("gamepaddisconnected", e=>{
+                this.handlers = []
+                console.log('disconnect gamepad', e.gamepad)
+            });
+        }
+
+        updateStatus = ()=>{
+            var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+            var gamepad = gamepads[0]
+            if(gamepad){
+                const statuses = {
+                    'leftRight': gamepad.axes[0],
+                    'upDown': gamepad.axes[1],
+                    'zoom': gamepad.axes[2],
+                    'rotateX': gamepad.axes[3], //Tilt on X axis
+                    'rotateY': gamepad.axes[5], //Rotate on Y axis
+                    'rotateZ': gamepad.axes[4], //Rotate on Z axis
+                }
+                for(let handler of this.handlers){
+                    handler(statuses)
+                }
+               requestAnimationFrame(this.updateStatus)
+            }
+        }
+
+        addAxesListener(handler){
+            this.handlers.push(handler)
+            return this;
+        }
+    }
+
+function handleFlag(v, F,B){
+    if(v>0.1){
+        flags[F] = true
+    }else if(v<-0.1){
+        flags[B] = true
+    }else{
+        flags[F] = false
+        flags[B] = false
+    }
+}
+
+var axies;
+new GamepadHandler().addAxesListener(statuses=>{
+    axies  = statuses;
+    /*
+    handleFlag(statuses.leftRight, 'moveLeft', 'moveRight')
+    handleFlag(statuses.upDown, 'moveDown', 'moveUp')
+    handleFlag(statuses.zoom, 'moveForward', 'moveBackward')
+    */
+    /*
+    leftRight.setAttribute("value", statuses.leftRight+1)
+    zoom.setAttribute("value", statuses.zoom+1)
+    upDown.setAttribute("value", statuses.upDown+1)
+    rotateX.setAttribute("value", statuses.rotateX+1)
+    rotateY.setAttribute("value", statuses.rotateY+1)
+    rotateZ.setAttribute("value", statuses.rotateZ+1)
+    */
+})
+
+
+
+viewer.clock.onTick.addEventListener(function(clock) {
+    var camera = viewer.camera;
+
+    if (flags.looking) {
+        var width = canvas.clientWidth;
+        var height = canvas.clientHeight;
+
+        // Coordinate (0.0, 0.0) will be where the mouse was clicked.
+        var x = (mousePosition.x - startMousePosition.x) / width;
+        var y = -(mousePosition.y - startMousePosition.y) / height;
+
+        var lookFactor = 0.05;
+        camera.lookRight(x * lookFactor);
+        camera.lookUp(y * lookFactor);
+    }
+
+    // Change movement speed based on the distance of the camera to the surface of the ellipsoid.
+    var cameraHeight = ellipsoid.cartesianToCartographic(camera.position).height;
+    var moveRate = 2*cameraHeight / 100.0;
+
+    if(axies){
+        if (axies.zoom>0.2) {
+            camera.moveForward(axies.zoom * moveRate);
+        }else if(axies.zoom<-0.2){
+            camera.moveBackward( -axies.zoom * moveRate);
+        }
+        if (axies.leftRight>0.1) {
+            console.log(axies.leftRight) 
+            camera.moveLeft(axies.leftRight * moveRate);
+        }else if(axies.leftRight<-0.01){
+            camera.moveRight(-axies.leftRight * moveRate);
+        }
+        if (axies.upDown>0.1) {
+            camera.moveUp(axies.upDown * moveRate);
+        }else if(axies.upDown<-0.01){
+            camera.moveDown(- axies.upDown * moveRate);
+        }
+    }
+
+});
+
+})(viewer)
+
+  
+  </script>
+</body>
+</html>   
