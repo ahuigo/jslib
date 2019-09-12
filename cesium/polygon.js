@@ -1,4 +1,16 @@
 var viewer = new Cesium.Viewer('cesiumContainer');
+    viewer.entities.add({
+        polyline : {
+            positions : Cesium.Cartesian3.fromDegreesArrayHeights([
+                116.00500779274114, 39.87638678884143,15500,
+                115.94500779274114, 39.27638678884143,18000,
+                114.94500779274114, 38.27638678884143,18800,
+            ]),
+            width : 50.0,
+            material : Cesium.Color.ORANGE,
+            // clampToGround : true
+        }
+    });
 
 var redPolygon = viewer.entities.add({
     name : 'Red polygon on surface',
