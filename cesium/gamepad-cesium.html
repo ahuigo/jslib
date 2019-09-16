@@ -28,7 +28,7 @@ scene.screenSpaceCameraController.enableRotate = false;
 scene.screenSpaceCameraController.enableTranslate = false;
 scene.screenSpaceCameraController.enableZoom = false;
 scene.screenSpaceCameraController.enableTilt = false;
-scene.screenSpaceCameraController.enableLook = false;
+scene.screenSpaceCameraController.enableLook = true;
 
 var startMousePosition;
 var mousePosition;
@@ -179,23 +179,48 @@ viewer.clock.onTick.addEventListener(function(clock) {
     // Change movement speed based on the distance of the camera to the surface of the ellipsoid.
     var cameraHeight = ellipsoid.cartesianToCartographic(camera.position).height;
     var moveRate = 2*cameraHeight / 100.0;
+    console.log(moveRate)
+    var SETTINGS={
+      zoomSensibility: 5.5,
+      panSensibility: 0.00000015
+    };
+    var cameraHeight = viewer.scene.globe.ellipsoid.cartesianToCartographic(viewer.camera.position).height / 1000.0 || Number.MAX_VALUE;
+
 
     if(axies){
+
         if (axies.zoom>0.2) {
             camera.moveForward(axies.zoom * moveRate);
         }else if(axies.zoom<-0.2){
             camera.moveBackward( -axies.zoom * moveRate);
         }
-        if (axies.leftRight>0.1) {
+        if (axies.leftRight>0.2) {
             console.log(axies.leftRight) 
             camera.moveLeft(axies.leftRight * moveRate);
-        }else if(axies.leftRight<-0.01){
+        }else if(axies.leftRight<-0.2){
             camera.moveRight(-axies.leftRight * moveRate);
         }
-        if (axies.upDown>0.1) {
+        if (axies.upDown>0.2) {
             camera.moveUp(axies.upDown * moveRate);
-        }else if(axies.upDown<-0.01){
+        }else if(axies.upDown<-0.2){
             camera.moveDown(- axies.upDown * moveRate);
+        }
+        if (axies.rotateY>0.2) {
+            camera.rotateRight(0.01);
+        }else if(axies.rotateY<-0.2){
+            camera.rotateLeft(0.01 );
+        }
+
+
+        if (axies.rotateX>0.2) {
+            camera.rotateDown(0.01);
+        }else if(axies.rotateX<-0.2){
+            camera.rotateUp(0.01);
+        }
+        if (axies.rotateZ>0.2) {
+            camera.twistRight(0.01);
+        }else if(axies.rotateZ<-0.2){
+            camera.twistLeft(0.01);
         }
     }
 

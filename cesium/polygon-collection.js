@@ -22,6 +22,9 @@ polylines.add({
   width : 4,
     loop:true,
     show: true,
+      material : Cesium.Material.fromType('Color', {
+        color : new Cesium.Color(244.0, 67, 54, 1.0)
+    }),
 });
     
     viewer.scene.primitives.add(polylines);
