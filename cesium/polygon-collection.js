@@ -22,8 +22,14 @@ polylines.add({
   width : 4,
     loop:true,
     show: true,
-      material : Cesium.Material.fromType('Color', {
-        color : new Cesium.Color(244.0, 67, 54, 1.0)
+    //https://cesiumjs.org/Cesium/Build/Documentation/Material.html
+    material:new Cesium.Material({
+        fabric : {
+            type : 'Color',
+            uniforms : {
+                color : new Cesium.Color(1.0, 0.0, 0.0, 0.8)
+            }
+        }
     }),
 });
     

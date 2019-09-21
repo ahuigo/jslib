@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="https://cesiumjs.org/releases/1.61/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesiumjs.org/releases/1.61/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+    <input id="url" value="s">
+  <div id="cesiumContainer" style="width: 700px; height:400px"></div>
+  <script>
+      function loadJs(src){
+          var script = document.createElement('script')
+          script.src="";
+          document.body.appendChild(script)
+      }
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmM2JkZGI3Mi02ZDZkLTQ3Y2UtODk4OC0xMTQ0YjJmMTg5YTciLCJpZCI6MTU1MTcsInNjb3BlcyI6WyJhc2wiLCJhc3IiLCJhc3ciLCJnYyJdLCJpYXQiOjE1NjgxMTg1ODN9.8NwS-ZfPFGPAZm_S-Z-UGDIhaHIvYAH4IsvOH3BIh1Y';
+
+    var viewer = new Cesium.Viewer('cesiumContainer');
+    var hash = location.hash.slice(1)
+    loadJs(hash)
+  </script>
+</body>
+</html> 
