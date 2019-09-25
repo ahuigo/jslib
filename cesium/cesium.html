@@ -6,12 +6,15 @@
   <link href="https://cesiumjs.org/releases/1.61/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 </head>
 <body>
-    <input id="url" value="s">
-  <div id="cesiumContainer" style="width: 700px; height:400px"></div>
+
+    <textarea id="code" rows="20" cols="150" oninput="exec(this)"></textarea>
+  <div id="cesiumContainer" style="width: 1000px; height:700px"></div>
   <script>
       function loadJs(src){
+          if(!src) return
+          console.log(src)
           var script = document.createElement('script')
-          script.src="";
+          script.src=src;
           document.body.appendChild(script)
       }
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmM2JkZGI3Mi02ZDZkLTQ3Y2UtODk4OC0xMTQ0YjJmMTg5YTciLCJpZCI6MTU1MTcsInNjb3BlcyI6WyJhc2wiLCJhc3IiLCJhc3ciLCJnYyJdLCJpYXQiOjE1NjgxMTg1ODN9.8NwS-ZfPFGPAZm_S-Z-UGDIhaHIvYAH4IsvOH3BIh1Y';
@@ -19,6 +22,14 @@
     var viewer = new Cesium.Viewer('cesiumContainer');
     var hash = location.hash.slice(1)
     loadJs(hash)
+    window.addEventListener('popstate', function(e) {     
+        var hash = location.hash.slice(1)
+        loadJs(hash)
+ 　　});
+    function exec(e){
+        eval(e.value)
+    }
+    
   </script>
 </body>
 </html> 
