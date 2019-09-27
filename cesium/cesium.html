@@ -21,6 +21,7 @@
 
     var viewer = new Cesium.Viewer('cesiumContainer');
     var hash = location.hash.slice(1)
+    var camera = viewer.camera
     loadJs(hash)
     window.addEventListener('popstate', function(e) {     
         var hash = location.hash.slice(1)
