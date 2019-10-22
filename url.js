@@ -6,27 +6,27 @@
  *				'/a/b/c?a=1#c1=2&c2=5';
  */
 
-String.prototype.parseUrl = function(){ 
-    var url=this; 
-    var pos,str, urlInfo = { 'scheme':'', 'user':'', 'pass':'', 'path':'', 'query':'', 'fragment':'' }; 
-    pos = url.indexOf('#'); 
-    if(pos>-1){ 
-        urlInfo['fragment'] = url.substr(pos+1); 
-        url = url.substr(0,pos); 
-    } 
+String.prototype.parseUrl = function () {
+    var url = this;
+    var pos, str, urlInfo = { 'scheme': '', 'user': '', 'pass': '', 'path': '', 'query': '', 'fragment': '' };
+    pos = url.indexOf('#');
+    if (pos > -1) {
+        urlInfo['fragment'] = url.substr(pos + 1);
+        url = url.substr(0, pos);
+    }
     pos = url.indexOf('://');
-    if(pos>-1){
-        urlInfo['scheme'] = url.substr(0,pos);
-        url = url.substr(pos+3);
+    if (pos > -1) {
+        urlInfo['scheme'] = url.substr(0, pos);
+        url = url.substr(pos + 3);
     }
 
-    var host_pos;
-    if( (host_pos = url.indexOf('/')) > -1
+    let host_pos, host_str, at_pos;
+    if ((host_pos = url.indexOf('/')) > -1
         || (host_pos = url.indexOf('?')) > -1
         || (host_pos = url.indexOf('#')) > -1
-    ){
-        host_str = url.substr(0,host_pos);
-    }else{
+    ) {
+        host_str = url.substr(0, host_pos);
+    } else {
         host_str = url;
     }
 
@@ -37,18 +37,18 @@ String.prototype.parseUrl = function(){
         host_str = host_str.substr(at_pos + 1);
     }
     const [host, port] = host_str.split(':')
-    urlInfo['host'] = host;
-    urlInfo['port'] = port?port:80;
-    if(-1 == host_pos){
+    urlInfo['host'] = host
+    urlInfo['port'] = port ? port : 80
+    if (-1 == host_pos) {
         return urlInfo;
     }
     url = url.substr(host_pos);
 
     pos = url.indexOf('?');
-    if(pos>-1){
-        urlInfo['path'] = url.substr(0,pos);
-        urlInfo['query'] = url.substr(pos+1);
-    }else{
+    if (pos > -1) {
+        urlInfo['path'] = url.substr(0, pos);
+        urlInfo['query'] = url.substr(pos + 1);
+    } else {
         urlInfo['path'] = url;
     }
     return urlInfo;
@@ -57,33 +57,34 @@ String.prototype.parseUrl = function(){
 /**
  * addParams
  */
-String.prototype.addParams = function(param){
-    var url,query;
+String.prototype.addParams = function (param) {
+    var url, query;
 
     var urlInfo = this.parseUrl();
 
     query = urlInfo['query'];
-   var params = query.parseStr();
+    var params = query.parseStr();
 
-    if(typeof param === 'string'){
+    if (typeof param === 'string') {
         param = param.parseStr();
     }
 
-    for(var i in param){
+    for (var i in param) {
         params[i] = param[i];
     }
     var query = http_build_query(params);
 
     url = '';
-    if(urlInfo['scheme']){
+    if (urlInfo['scheme']) {
         url += urlInfo['scheme'] + '://';
     }
-    url += urlInfo['host'] + urlInfo['path']+'?'+query;
-    if(urlInfo['fragment']){
-        url += '#'+urlInfo['fragment'];
+    url += urlInfo['host'] + urlInfo['path'] + '?' + query;
+    if (urlInfo['fragment']) {
+        url += '#' + urlInfo['fragment'];
     }
     return url;
 };
+
 /**
  *
  * @param params
@@ -91,22 +92,26 @@ String.prototype.addParams = function(param){
  * @param temp_key
  * @returns {string}
  */
-http_build_query = function (params, num_prefix, temp_key) {
+let http_build_query = function (params, num_prefix, temp_key) {
     var output_string = [];
 
     Object.keys(params).forEach(function (val) {
 
         var key = val;
 
-        num_prefix && !isNaN(key) ? key = num_prefix + key : '';
+        if (num_prefix && !isNaN(key)) {
+            key = num_prefix + key
+        }
 
         var key = encodeURIComponent(key.replace(/[!'()*]/g, escape));
-        temp_key ? key = temp_key + '[' + key + ']' : '';
+        if (temp_key) {
+            key = temp_key + '[' + key + ']'
+        }
 
         if (typeof params[val] === 'object') {
-            var query = build_query(params[val], null, key);
+            var query = http_build_query(params[val], null, key);
             output_string.push(query);
-        } else if(typeof params[val] === 'string'){
+        } else if (typeof params[val] === 'string') {
             var value = encodeURIComponent(params[val].replace(/[!'()*]/g, escape));
             output_string.push(key + '=' + value);
         }
@@ -116,23 +121,24 @@ http_build_query = function (params, num_prefix, temp_key) {
     return output_string.join('&');
 
 };
-
 /**
  * parseStr('a=1&b=2')
  */
-String.prototype.parseStr = function (key){
-    var queryArr = this.replace(/^[&?]/, '') .replace(/&$/, '').split('&');
+String.prototype.parseStr = function (key) {
+    var query = this.replace(/^[&?]/, '').replace(/&$/, '');
+    var queryArr = query ? query.split('&') : [];
     var arr = {};
-    for(var seg of queryArr){
+    for (var seg of queryArr) {
         var k = seg.split('=')[0];
         var v = seg.split('=')[1] || '';
         arr[k] = decodeURIComponent(v.replace(/\+/g, '%20'));
     }
-    if(key){
-       return arr[key]?arr[key]:'';
+    if (key) {
+        return arr[key] ? arr[key] : '';
     }
     return arr;
 };
+
 /**
  *
  *$('<textarea>').html('<a href="" src="">abc</a>').text()
@@ -140,35 +146,13 @@ String.prototype.parseStr = function (key){
   $('<textarea>').html('<a href="" src="">abc</a>').html()
 	"&lt;a href="" src=""&gt;abc&lt;/a&gt;"
  */
-String.prototype.encodeEntities = function (){
+String.prototype.encodeEntities = function () {
     var textArea = document.createElement('p');
     textArea.innerText = this;
     return textArea.innerHTML;
 };
 
-function Pager(pager, currentPage, maxPage){
-    var search = '?'+ location.search.substr(1);
-    var matches;
-    if (matches = search.match(/[&?](page=\d+)/)) {
-        search = search.replace(matches[1], '');
-    }
-    var start = currentPage - ((currentPage-1) % 10);
-    var end = start+10 > maxPage ? maxPage : start+10;
-    start = start-1 > 0? start -1: 1;
-
-    var ol = $('<ol class="pagination"></ol>');
-    if(start>1){
-        ol.append($('<li><a href="'+search.addParams('page=1')+'">'+(1)+'</a></li>'));
-    }
-    for(var i=start; i<=end; i++){
-        if(i===currentPage){
-            ol.append($('<li><a href="#">'+i+'</a></li>'));
-        }else{
-            ol.append($('<li><a href="'+search.addParams('page='+i)+'">'+i+'</a></li>'));
-        }
-    }
-    if(end<maxPage){
-        ol.append($('<li><a href="'+search.addParams('&page='+maxPage)+'">'+maxPage+'</a></li>'));
-    }
-    pager.html('').append(ol);
+function removeUndefined(obj) {
+    Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key])
+    return this
 }

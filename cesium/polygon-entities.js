@@ -120,3 +120,12 @@ var purplePolygonUsingRhumbLines = viewer.entities.add({
 });
 
 viewer.zoomTo(viewer.entities);
+
+
+
+// Create a circle.
+var circle = new Cesium.CircleGeometry({
+  center : Cesium.Cartesian3.fromDegrees(-75.59777, 40.03883),
+  radius : 100000.0
+});
+var geometry = Cesium.CircleGeometry.createGeometry(circle);
