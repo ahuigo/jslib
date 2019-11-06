@@ -7,6 +7,40 @@ export default class MouseDrag {
         debugger
         console.log(el)
     }
+
+    /**
+     * MouseDrag.onDragMove(ele, (v,b)=>{
+        ele.style.top=(ele.offsetTop+b.y)+'px';
+        ele.style.left=(ele.offsetLeft+b.x)+'px';
+    })
+     * @param {*} ele 
+     * @param {*} callback 
+     */
+    static onDragMove(ele, callback){
+        ele.onmousedown = this.onMouseDown.bind(this, ele, callback)
+    }
+
+    static onMouseDown(ele, callback, e) {
+        let oldX = e.clientX
+        let oldY = e.clientY
+        e.preventDefault();
+        ele.onmousemove = e=>{
+            let x = e.clientX-oldX, y = e.clientY-oldY;
+            oldX = e.clientX, oldY = e.clientY;
+            return callback(ele, {x, y})
+        }
+        ele.onmouseup =e=>{
+            ele.onmousemove = null;
+            ele.onmouseup = null;
+        }
+    }
+
+
+    /**
+     * 只drag 一条轴
+     * @param {*} e 
+     * @param {*} callback 
+     */
     static dragResize(e, callback) {
         /**
          * 开启

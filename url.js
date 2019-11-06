@@ -57,7 +57,7 @@ String.prototype.parseUrl = function () {
 /**
  * addParams
  */
-String.prototype.addParams = function (param) {
+String.prototype.addParams = function (param, withHost = false) {
     var url, query;
 
     var urlInfo = this.parseUrl();
@@ -69,16 +69,20 @@ String.prototype.addParams = function (param) {
         param = param.parseStr();
     }
 
-    for (var i in param) {
-        params[i] = param[i];
+    for (var [k, v] of Object.entries(param)) {
+        params[k] = v;
     }
     var query = http_build_query(params);
 
     url = '';
-    if (urlInfo['scheme']) {
-        url += urlInfo['scheme'] + '://';
+    if (withHost) {
+        if (urlInfo['scheme']) {
+            url += urlInfo['scheme'] + '://';
+        }
+        url += urlInfo['host'];
+
     }
-    url += urlInfo['host'] + urlInfo['path'] + '?' + query;
+    url += urlInfo['path'] + '?' + query;
     if (urlInfo['fragment']) {
         url += '#' + urlInfo['fragment'];
     }
@@ -111,7 +115,8 @@ let http_build_query = function (params, num_prefix, temp_key) {
         if (typeof params[val] === 'object') {
             var query = http_build_query(params[val], null, key);
             output_string.push(query);
-        } else if (typeof params[val] === 'string') {
+        } else if (['string', 'number'].includes(typeof params[val])) {
+            params[val] += '';
             var value = encodeURIComponent(params[val].replace(/[!'()*]/g, escape));
             output_string.push(key + '=' + value);
         }

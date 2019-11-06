@@ -8,7 +8,8 @@
 <body>
 
     <textarea id="code" rows="20" cols="150" oninput="exec(this)"></textarea>
-  <div id="cesiumContainer" style="width: 1000px; height:700px"></div>
+    <input type="checkbox" id="run" onchange="exec(code)" checked=""/>
+    <div id="cesiumContainer" style="width: 1000px; height:700px"></div>
   <script>
       function loadJs(src){
           if(!src) return
@@ -27,8 +28,15 @@
         var hash = location.hash.slice(1)
         loadJs(hash)
  　　});
-    function exec(e){
-        eval(e.value)
+    document.addEventListener('keydown', e=>{
+        if(e.metaKey && e.key==='Enter'){
+            eval(code.value)
+        }
+    })
+    function exec(ele){
+        // if(run.checked){
+        //     eval(ele.value)
+        // }
     }
     
   </script>
