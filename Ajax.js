@@ -1,6 +1,6 @@
-import osmtogeojson from 'osmtogeojson';
-import Notify from 'util/ui/Notify';
-import User from 'api/User';
+// import osmtogeojson from 'osmtogeojson';
+// import Notify from 'util/ui/Notify';
+// import User from 'api/User';
 
 /**
  * Ajax 接口封装
@@ -12,7 +12,7 @@ class Ajax {
     };
 
     /**
-     * init
+     * Request 请求
      * @param {String} url
      * @param {String:'get|post|put|delete|...'} method
      * @param {Object} data   {key1:value1, key2:value2}
@@ -34,7 +34,7 @@ class Ajax {
     }
 
     /**
-     * Disable send cookie via inlude
+     *  不发送cookie
      */
     disableCookie() {
         delete this.options['credentials'];
@@ -76,7 +76,7 @@ class Ajax {
     }
 
     /**
-     * debug
+     * 开启 debug 输出
      */
     debug() {
         this.prepareReq();
@@ -90,7 +90,7 @@ class Ajax {
     }
 
     /**
-     *
+     * 设置fetch 选项
      * @param {*} options
      */
     setOption(options) {
@@ -99,7 +99,7 @@ class Ajax {
     }
 
     /**
-     *
+     * 获取结果 .then(res=>console.log(res))
      * @param {Function} successHandler
      * @returns Promise<any>
      */
@@ -108,10 +108,9 @@ class Ajax {
         return new Promise((resolve, reject) => {
             fetch(this.url, this.options).then(async (response) => {
                 var res;
-                if (response.status === 401) {
-                    User.login();
-                }
-
+                // if (response.status === 401) {
+                //     User.login();
+                // }
                 res = await this.parseResponse(response)
                 if (!response.ok) {
                     throw (res && res.message) ? res : new Error(JSON.stringify(res))
@@ -122,18 +121,17 @@ class Ajax {
                 if (errorHandler) {
                     return resolve(errorHandler(e))
                 }
-                reject(e)
+                //reject(e)
             })
         })
     }
+
+    /**
+     * 捕获错误
+     * @param {*} errorHandler 
+     */
     catch(errorHandler) {
         return this.then(null, errorHandler)
-    }
-    /**
-     * 
-     */
-    exec() {
-        return this.then(d => d)
     }
 
 
@@ -172,12 +170,13 @@ class Ajax {
      * @param {String} xml
      */
     parseGeojson(xml) {
-        const parser = new DOMParser();
-        window.xml = xml; //debug
-        const geojson = osmtogeojson(parser.parseFromString(xml, 'text/xml'), {
-            flatProperties: false
-        });
-        return geojson;
+        return xml;
+        // const parser = new DOMParser();
+        // window.xml = xml; //debug
+        // const geojson = osmtogeojson(parser.parseFromString(xml, 'text/xml'), {
+        //     flatProperties: false
+        // });
+        // return geojson;
     }
 
     /**
@@ -243,6 +242,9 @@ class Ajax {
                 if (value instanceof Date) {
                     return encodeURIComponent(key) + '=' + value.toISOString()
                 }
+                if (value == null) {
+                    return ""
+                }
                 return encodeURIComponent(key) + '=' + encodeURIComponent(value);
             })
             .join('&');
@@ -295,13 +297,18 @@ class Ajax {
         if (this.noPopupError) {
             return;
         }
-        if (e && e.message) {
-            Notify.error(e.message);
-        } else {
-            Notify.error(e);
+        if (Ajax.errorHandler) {
+            const msg = (e && e.message) || e;
+            Ajax.errorHandler(msg)
+
         }
     }
+    static onErrorHandler(callback) {
+        this.errorHandler = callback;
+    }
 }
-window.Ajax = Ajax
+window.Ajax = Ajax;
+// Ajax.onErrorHandler(msg => {
+//     Notify.error(msg);
+// })
 export default Ajax;
-
