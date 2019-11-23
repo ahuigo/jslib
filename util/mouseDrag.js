@@ -9,7 +9,7 @@ export default class MouseDrag {
     }
 
     /**
-     * MouseDrag.onDragMove(ele, (v,b)=>{
+     * MouseDrag.onDragMove(ele, (b)=>{
         ele.style.top=(ele.offsetTop+b.y)+'px';
         ele.style.left=(ele.offsetLeft+b.x)+'px';
     })
@@ -27,7 +27,7 @@ export default class MouseDrag {
         ele.onmousemove = e=>{
             let x = e.clientX-oldX, y = e.clientY-oldY;
             oldX = e.clientX, oldY = e.clientY;
-            return callback(ele, {x, y})
+            return callback({x, y})
         }
         ele.onmouseup =e=>{
             ele.onmousemove = null;
