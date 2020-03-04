@@ -92,32 +92,27 @@ String.prototype.addParams = function (param, withHost = false) {
 /**
  *
  * @param params
- * @param num_prefix
  * @param temp_key
  * @returns {string}
  */
-let http_build_query = function (params, num_prefix, temp_key) {
+let http_build_query = function (params, temp_key) {
     var output_string = [];
 
-    Object.keys(params).forEach(function (val) {
+    Object.keys(params).forEach(function (ori_key) {
 
-        var key = val;
-
-        if (num_prefix && !isNaN(key)) {
-            key = num_prefix + key
-        }
+        var key = ori_key;
 
         var key = encodeURIComponent(key.replace(/[!'()*]/g, escape));
         if (temp_key) {
             key = temp_key + '[' + key + ']'
         }
 
-        if (typeof params[val] === 'object') {
-            var query = http_build_query(params[val], null, key);
+        if (typeof params[ori_key] === 'object') {
+            var query = http_build_query(params[ori_key],  key);
             output_string.push(query);
-        } else if (['string', 'number'].includes(typeof params[val])) {
-            params[val] += '';
-            var value = encodeURIComponent(params[val].replace(/[!'()*]/g, escape));
+        } else if (['string', 'number'].includes(typeof params[ori_key])) {
+            params[ori_key] += '';
+            var value = encodeURIComponent(params[ori_key].replace(/[!'()*]/g, escape));
             output_string.push(key + '=' + value);
         }
 
@@ -126,6 +121,7 @@ let http_build_query = function (params, num_prefix, temp_key) {
     return output_string.join('&');
 
 };
+
 /**
  * parseStr('a=1&b=2')
  */
