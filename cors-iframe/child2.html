@@ -1,0 +1,7 @@
+<a href="//1.localhost:8089/child1.html">child1</a>
+This is Child2
+<script>
+    console.log([window.name, window.opener])
+    window.parent.postMessage("msg from child1", '*') 
+    window.name="child2"
+</script>
