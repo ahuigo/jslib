@@ -28,3 +28,5 @@ f()
 
 
 
+    var {heading,pitch,roll} = camera;
+    orientation : new Cesium.HeadingPitchRoll.fromDegrees(Cesium.Math.toDegrees(heading),Cesium.Math.toDegrees(pitch), i),
