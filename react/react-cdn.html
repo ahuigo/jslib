@@ -1,0 +1,30 @@
+<div id="root"></div>
+<script src="https://unpkg.com/react@16.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@16.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+
+<script type="text/babel">
+function Index(){
+  const cal = ()=>{
+    
+  }
+  return (<div>
+        <input  value={1} onChange={cal}/>
+        <select>
+            <option value="+">+</option>
+            <option value="-">-</option>
+            <option value="*">*</option>
+            <option value="/">/</option>
+        </select>
+        <input value={3} onChange={cal}/>
+        <button onClick={cal}>=</button>
+        <input value="?" />
+    </div>
+  );
+  }
+  ReactDOM.render(
+    <Index/>,
+    document.getElementById('root')
+  );
+
+</script>
