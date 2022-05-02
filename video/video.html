@@ -21,9 +21,16 @@
     </div>
     <input class="video-input" value="http://1252093142.vod2.myqcloud.com/4704461fvodcq1252093142/f865d8a05285890787810776469/playlist.f3.m3u8" id="src" />
     <button id="btnPlay">play </button>
+    <div id="logger"></div>
 </body>
- 
 <script>
+    function logger(msg){
+        document.querySelector('#logger').innerText = msg
+    }
+    function p(a){
+        console.log(JSON.stringify(a))
+    }
+
     // videojs 简单使用
     var myVideo = videojs('myVideo', {
         bigPlayButton: true,
@@ -31,6 +38,83 @@
         posterImage: false,
         errorDisplay: true,
     })
+
+    // 原生的是: $('video').playbackRate = 1
+    const vplaybackRate=function(rate, adust){
+        let args = arguments
+        if (args.length==0){
+            return myVideo.player().playbackRate()
+        }else if(adust!==undefined){
+            let rate = myVideo.player().playbackRate()+adust;
+            if(rate>=0){
+                myVideo.player().playbackRate(rate)
+                logger('rate to:'+rate)
+            }else{
+                logger('bad rate'+rate)
+            }
+        }else{
+            myVideo.player().playbackRate(rate)
+        }
+    }
+
+    const onkeydown=(e)=>{
+        const v = myVideo.player()
+        p(e)
+        console.log(e.key,e.code,e)
+
+        const step = v.duration()/100
+        const rate = vplaybackRate()
+        //e.preventDefault()
+        if(e.key==='ArrowUp'){
+            if(rate<1.99){
+                vplaybackRate(0,0.2)
+            }else if(vplaybackRate()<16){
+                vplaybackRate(Math.round(rate *2))
+            }
+        }
+
+        if(e.code==="ArrowDown"){
+            if(rate <=1.01) {
+                vplaybackRate(0,-0.1)
+            }else if (rate<2.01){
+                vplaybackRate(0,-.2)
+            }else {
+                vplaybackRate(rate/=2)
+            }
+        }
+        if(e.key==='ArrowRight'){
+            console.log(v.currentTime, step)
+            if(!e.repeat ) v.currentTime -= step
+            v.currentTime += 5*rate
+            e.preventDefault()
+        }
+        if(e.key==='ArrowLeft'){
+        console.log(v.currentTime)
+            if(!e.repeat) {
+            v.currentTime += Math.min(v.currentTime, step)
+            }
+            console.log(5*rate)
+            v.currentTime -= 5*rate
+            e.preventDefault()
+        }
+        if(e.code==='Space' ){
+            //vplaybackRate() =1
+            //v.play()
+        }
+        //e.stopPropagation()
+        e.stopImmediatePropagation()
+        logger("rate:"+vplaybackRate())
+        return e
+    }
+</script>
+
+ 
+<script>
+    // controls
+    vdom=document.querySelector('#'+'myVideo')
+    vdom.addEventListener('keydown', onkeydown, true)
+
+    // changeVideo
     var changeVideo = function (vdoSrc) {
         if (/\.m3u8$/.test(vdoSrc)) { //判断视频源是否是m3u8的格式
             myVideo.src({
