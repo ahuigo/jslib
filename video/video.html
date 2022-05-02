@@ -2,11 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>前端播放m3u8格式视频</title>
     <link href="./video-js.css" rel="stylesheet">
     <script src='./video.js'></script>
-    <script src="./videojs-contrib-hls.min.js" type="text/javascript"></script>
-    <!-- videojs-contrib-hls 用于在电脑端播放 如果只需手机播放可以不引入 -->
+    <script src="./videojs-http-streaming.js" type="text/javascript"></script>
+    <!-- videojs-http-streaming 用于在电脑端播放 如果只需手机播放可以不引入 -->
 </head>
 <body>
     <style>
@@ -28,9 +27,9 @@
     // videojs 简单使用
     var myVideo = videojs('myVideo', {
         bigPlayButton: true,
-        textTrackDisplay: false,
+        textTrackDisplay: true,
         posterImage: false,
-        errorDisplay: false,
+        errorDisplay: true,
     })
     var changeVideo = function (vdoSrc) {
         if (/\.m3u8$/.test(vdoSrc)) { //判断视频源是否是m3u8的格式
