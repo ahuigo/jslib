@@ -11,7 +11,10 @@
     <style>
         .video-js .vjs-tech {position: relative !important;}
         .video-input{
-            width:1000px;
+            width:100%;
+        }
+        #myVideo{
+            width:100%;
         }
     </style>
     <div>
@@ -58,11 +61,12 @@
     }
 
     const onkeydown=(e)=>{
-        const v = myVideo.player()
+        const v = document.querySelector('#myVideo_html5_api')
         p(e)
+        const vplayer = myVideo.player()
         console.log(e.key,e.code,e)
 
-        const step = v.duration()/100
+        const step = v.duration/100
         const rate = vplaybackRate()
         //e.preventDefault()
         if(e.key==='ArrowUp'){
@@ -79,27 +83,27 @@
             }else if (rate<2.01){
                 vplaybackRate(0,-.2)
             }else {
-                vplaybackRate(rate/=2)
+                vplaybackRate(rate/2)
             }
         }
         if(e.key==='ArrowRight'){
+            v.currentTime += 3
             console.log(v.currentTime, step)
-            if(!e.repeat ) v.currentTime -= step
-            v.currentTime += 5*rate
+            // if(!e.repeat ) v.currentTime -= step
+            // v.currentTime += 5*rate
             e.preventDefault()
         }
         if(e.key==='ArrowLeft'){
         console.log(v.currentTime)
-            if(!e.repeat) {
-            v.currentTime += Math.min(v.currentTime, step)
-            }
-            console.log(5*rate)
-            v.currentTime -= 5*rate
+            v.currentTime -= 3
+            // if(!e.repeat) {
+            //     v.currentTime += Math.min(v.currentTime, step)
+            // }
+            // v.currentTime -= 5*rate
             e.preventDefault()
         }
         if(e.code==='Space' ){
-            //vplaybackRate() =1
-            //v.play()
+            vplayer.paused()? vplayer.play():vplayer.pause()
         }
         //e.stopPropagation()
         e.stopImmediatePropagation()
@@ -112,7 +116,7 @@
 <script>
     // controls
     vdom=document.querySelector('#'+'myVideo')
-    vdom.addEventListener('keydown', onkeydown, true)
+    document.addEventListener('keydown', onkeydown, true)
 
     // changeVideo
     var changeVideo = function (vdoSrc) {
@@ -128,6 +132,7 @@
         myVideo.play();
     }
     document.querySelector('#btnPlay').addEventListener('click', function () {
-        changeVideo(src.value);
+        let src = document.querySelector('#src')
+        changeVideo(src.value.trim());
     })
 </script>
