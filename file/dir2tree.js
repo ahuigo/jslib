@@ -1,2 +1,0 @@
-test/191003/FILE191003-112517.NMEA
-test/a/b/
