@@ -1,0 +1,19 @@
+<script>
+let reloading = false;
+let buildId = "";
+new EventSource("/api/alive").addEventListener("message", (e)=>{
+    if (e.data !== buildId && !reloading) {
+        if(buildId ===""){
+            buildId = e.data
+            return
+        }
+        reloading = true;
+        location.reload();
+    }
+}
+);
+
+</script>
+<body>
+    event source
+</body>

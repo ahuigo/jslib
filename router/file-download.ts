@@ -6,10 +6,12 @@ export default async function fileHandler(requestEvent: Deno.RequestEvent) {
   // Try opening the file
   let file;
   try {
+    if (filepath.endsWith("/")) {
+      throw new Error(`this is path:${filepath}`);
+    }
     file = await Deno.open("." + filepath, { read: true });
-  } catch {
-    // If the file cannot be opened, return a "404 Not Found" response
-    const notFoundResponse = new Response("404 Not Found", { status: 404 });
+  } catch (e) {
+    const notFoundResponse = new Response(`404${e}`, { status: 404 });
     await requestEvent.respondWith(notFoundResponse);
     return;
   }
