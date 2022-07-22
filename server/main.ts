@@ -1,6 +1,6 @@
 import handleHttp from '../router/router.ts';
 
-Deno.test("server", async () => {
+Deno.test("main server", async () => {
   const port = 4501;
   const server = Deno.listen({ port });
   console.log(`File server running on http://localhost:${port}/`);

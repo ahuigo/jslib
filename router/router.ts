@@ -2,7 +2,6 @@ import fileDownHandler from './file-download.ts';
 import dumpHandler from './dump-handler.ts';
 
 export default async function router(conn: Deno.Conn) {
-
   const httpConn = Deno.serveHttp(conn);
   for await (const requestEvent of httpConn) {
     const url = new URL(requestEvent.request.url);
