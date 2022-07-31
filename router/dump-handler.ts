@@ -1,5 +1,5 @@
 // import { readAll } from '$std/streams/conversion.ts';
-import { readStreamString } from '$/str/io/str-stream.ts';
+import { readStreamString } from '$/file/io/str-stream.ts';
 export default async function fileHandler(requestEvent: Deno.RequestEvent) {
   const request = requestEvent.request;
   const url = new URL(requestEvent.request.url);

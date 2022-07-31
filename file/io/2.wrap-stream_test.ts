@@ -36,7 +36,7 @@ Deno.test('readStream', async () => {
  * merge read stream
  * http://localhost:8000/docs/examples/subprocess
  */
-// import { mergeReadableStreams } from "$std/streams/merge.ts";
+import { mergeReadableStreams } from "$std/streams/merge.ts";
 Deno.test('merge readStream', async () => {
   // create the file to attach the process to
   const file = await Deno.open("./process_output.txt", {

@@ -1,4 +1,5 @@
 import { readerFromStreamReader, readAll } from "$std/streams/conversion.ts";
+import { TextLineStream } from '$std/streams/delimiter.ts';
 export { readAll } from "$std/streams/conversion.ts";
 
 /**
@@ -16,8 +17,19 @@ export function createStream(input: string) {
 }
 
 // read stream
+// readStreamString(Deno.stdin.readable)
 export async function readStreamString(inputStream: ReadableStream) {
   const r = readerFromStreamReader(inputStream.getReader());
   const bytes = await readAll(r);
   return (new TextDecoder().decode(bytes));
+}
+
+export async function readStreamLines(inputStream: ReadableStream) {
+  // Deno.stdin.readable
+  const lines = inputStream
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new TextLineStream());
+  for await (const line of lines) {
+    console.log(line);
+  }
 }

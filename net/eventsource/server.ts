@@ -1,3 +1,4 @@
+import { dirname, fromFileUrl } from '$std/path/mod.ts';
 let BUILD_ID = 1;
 
 async function staticHandler(requestEvent: Deno.RequestEvent) {
@@ -87,7 +88,7 @@ Deno.test("main", async () => {
   const server = Deno.listen({ port });
   console.log(`File server running on http://localhost:${port}/`);
 
-  const rootDir = new URL('.', Deno.mainModule).href.replace(/^file:\/\//, "");
+  const rootDir = dirname(fromFileUrl(Deno.mainModule))
   Deno.chdir(rootDir);
   console.log('cwd', Deno.cwd());
 

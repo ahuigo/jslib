@@ -1,0 +1,1 @@
+> import countries from "https://cdn.jsdelivr.net/gh/umpirsky/country-list@2.0.6/data/en_US/country.json" assert { type: "json" }
