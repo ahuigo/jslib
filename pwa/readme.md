@@ -10,3 +10,6 @@ if we want to change start url to `/pwa`
 
     //vi manifest.json
     "start_url": "/pwa",
+
+1. start nginx(https)
+2. access https://s/index.html
