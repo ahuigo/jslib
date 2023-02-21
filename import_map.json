@@ -1,7 +1,7 @@
 
 {
   "imports": {
-    "$std/": "https://deno.land/std@0.147.0/",
+    "$std/": "https://deno.land/std@0.155.0/",
     "$/": "./",
     "$lib/": "./lib/",
     "twind": "https://esm.sh/twind@0.16.16",

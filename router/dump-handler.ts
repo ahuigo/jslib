@@ -21,6 +21,7 @@ referer:
   for (const [k, v] of (requestEvent.request.headers)) {
     headers += k + ": " + v + '\n';
   }
+  headers += "url: " + request.url + '\n';
   // requestEvent.request.body.
   let reqBody = "";
   if (request.body) {

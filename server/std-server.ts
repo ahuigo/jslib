@@ -11,4 +11,10 @@ const handler = (request: Request): Response => {
 };
 
 console.log(`HTTP webserver running. Access it at: http://localhost:8080/`);
-await serve(handler, { port });
+await serve(
+    handler, 
+    { 
+      port,
+      async onListen({ port, hostname }) {console.log(`listen port:${port} success`)},
+    }
+);

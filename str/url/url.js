@@ -126,18 +126,11 @@ let http_build_query = function (params, temp_key) {
  * parseStr('a=1&b=2')
  */
 String.prototype.parseStr = function (key) {
-    var query = this.replace(/^[&?]/, '').replace(/&$/, '');
-    var queryArr = query ? query.split('&') : [];
-    var arr = {};
-    for (var seg of queryArr) {
-        var k = seg.split('=')[0];
-        var v = seg.split('=')[1] || '';
-        arr[k] = decodeURIComponent(v.replace(/\+/g, '%20'));
-    }
-    if (key) {
-        return arr[key] ? arr[key] : '';
-    }
-    return arr;
+    const sp = new URLSearchParams(this.toString())
+    return [...sp.entries()].reduce((params,[k,v])=>{
+        params[k]=v; 
+        return params
+    },{})
 };
 
 /**

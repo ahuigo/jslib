@@ -10,10 +10,9 @@ function writeFile(path: string, data: string): string {
     return e.message;
   }
 }
+console.log(writeFile("./data.json", "some data"));
 
 /**
  * read file sync
  */
 Deno.readTextFileSync("./a.txt")
-
-console.log(writeFile("./data.json", "some data"));
