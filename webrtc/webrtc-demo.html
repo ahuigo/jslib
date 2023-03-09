@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebRTC Video Chat Demo</title>
+  <style>
+    #local-video, #remote-video {
+      width: 50%;
+      height: auto;
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <h1>WebRTC Video Chat Demo</h1>
+  <video id="local-video" autoplay muted></video>
+  <video id="remote-video" autoplay></video>
+  <br>
+  <button id="start-btn">Start Chat</button>
+  <button id="hangup-btn" disabled>Hang Up</button>
+
+  <script>
+const localVideo = document.querySelector('#local-video');
+const remoteVideo = document.querySelector('#remote-video');
+const startBtn = document.querySelector('#start-btn');
+const hangupBtn = document.querySelector('#hangup-btn');
+
+let localStream;
+let remoteStream;
+let localPeerConnection;
+let remotePeerConnection;
+
+const serverConfig = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
+  ],
+};
+
+function handleLocalStream(stream) {
+  localStream = stream;
+  localVideo.srcObject = stream;
+}
+
+async function handleStartButtonClick() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    handleLocalStream(stream);
+
+    startBtn.disabled = true;
+    hangupBtn.disabled = false;
+
+    createPeerConnections();
+    await addTracksToPeerConnection(localPeerConnection, stream);
+    await makeOffer();
+  } catch (error) {
+    console.log('Error accessing media devices', error);
+  }
+}
+
+function handleHangupButtonClick() {
+  localPeerConnection.close();
+  remotePeerConnection.close();
+
+  localStream.getTracks().forEach(track => track.stop());
+
+  localVideo.srcObject = null;
+  remoteVideo.srcObject = null;
+
+  startBtn.disabled = false;
+  hangupBtn.disabled = true;
+}
+
+function createPeerConnections() {
+  localPeerConnection = new RTCPeerConnection(serverConfig);
+  remotePeerConnection = new RTCPeerConnection(serverConfig);
+
+  localPeerConnection.addEventListener('icecandidate', handleLocalIceCandidate);
+  remotePeerConnection.addEventListener('icecandidate', handleRemoteIceCandidate);
+  remotePeerConnection.addEventListener('track', handleRemoteTrack);
+}
+
+async function addTracksToPeerConnection(peerConnection, stream) {
+  stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+}
+
+async function makeOffer() {
+  const offerDescription = await localPeerConnection.createOffer();
+  await localPeerConnection.setLocalDescription(offerDescription);
+  await remotePeerConnection.setRemoteDescription(offerDescription);
+
+  const answerDescription = await remotePeerConnection.createAnswer();
+  await remotePeerConnection.setLocalDescription(answerDescription);
+  await localPeerConnection.setRemoteDescription(answerDescription);
+}
+
+function handleLocalIceCandidate(event) {
+  if (event.candidate) {
+    remotePeerConnection.addIceCandidate(event.candidate);
+  }
+}
+
+function handleRemoteIceCandidate(event) {
+  if (event.candidate) {
+    localPeerConnection.addIceCandidate(event.candidate);
+  }
+}
+
+function handleRemoteTrack(event) {
+  remoteStream = event.streams[0];
+  remoteVideo.srcObject = remoteStream;
+}
+
+startBtn.addEventListener('click', handleStartButtonClick);
+hangupBtn.addEventListener('click', handleHangupButtonClick);
+  </script>
+</body>
+</html>
