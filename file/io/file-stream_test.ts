@@ -6,7 +6,8 @@ Deno.test('readFileStream', async () => {
 });
 
 Deno.test('writeFileStream', async () => {
-  const localUrl = "a.txt";
+  const localUrl = "./tmp/a.log";
   const file = await Deno.open(localUrl, { write: true });
   const _ = file.writable;
+  file.close();
 });
