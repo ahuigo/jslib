@@ -2,5 +2,5 @@
 	path = pwa/pwa-examples
 	url = git@github.com:ahuigo/pwa-examples.git
 [submodule "pwa"]
-	path = pwa
+	path = pwa-demo
 	url = git@github.com:ahuigo/pwa-demo.git
