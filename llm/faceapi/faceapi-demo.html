@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Face Detection Demo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+    video, canvas {
+      width: 640px;
+      height: 480px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+    #log {
+      margin-top: 10px;
+      background: #eee;
+      padding: 10px;
+      width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎥 Face-api.js 人脸检测 DEMO</h2>
+  <video id="video" autoplay muted playsinline></video>
+  <canvas id="overlay"></canvas>
+  <div id="log">加载中...</div>
+
+  <!-- ✅ 引入 face-api.js -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <script>
+    const videoEl = document.getElementById('video');
+    const canvasEl = document.getElementById('overlay');
+    const logEl = document.getElementById('log');
+    const ctx = canvasEl.getContext('2d');
+
+    const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+
+    function getMouthOpenDist(landmarks) {
+        const topInnerLip = landmarks.getMouth()[13]; // Point 62
+        const bottomInnerLip = landmarks.getMouth()[19]; // Point 66
+        const verticalDist = Math.abs(topInnerLip.y - bottomInnerLip.y);
+        // return verticalDist > 12;  // 敏感些
+        // return verticalDist > 20;  // 更严格
+        // return verticalDist > 15; // 阈值可调整（比如 > 15 表示张开）
+        return verticalDist; // 适中阈值
+        /*getMouth() 返回 口部共 20 个 landmark 点（indices 48-67）
+index 13 ≈ point 62；index 19 ≈ point 66（视觉中心对齐）*/
+    }
+
+
+    async function main() {
+      logEl.innerText = '📦 正在加载模型...';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      logEl.innerText = '✅ 模型加载完成';
+
+      // 开启摄像头
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoEl.srcObject = stream;
+      } catch (err) {
+        logEl.innerText = '❌ 无法访问摄像头: ' + err.message;
+        console.error(err);
+        return;
+      }
+
+      // 等待视频尺寸加载完成
+      videoEl.addEventListener('loadedmetadata', () => {
+        videoEl.width = videoEl.videoWidth;
+        videoEl.height = videoEl.videoHeight;
+        canvasEl.width = videoEl.videoWidth;
+        canvasEl.height = videoEl.videoHeight;
+
+        logEl.innerText = '🎬 正在运行检测...';
+        startDetection();
+      });
+    }
+
+    function startDetection() {
+      const displaySize = {
+        width: videoEl.videoWidth,
+        height: videoEl.videoHeight,
+      };
+      faceapi.matchDimensions(canvasEl, displaySize);
+
+      setInterval(async () => {
+        const detections = await faceapi
+          .detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks();
+
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        faceapi.draw.drawDetections(canvasEl, resizedDetections);
+        faceapi.draw.drawFaceLandmarks(canvasEl, resizedDetections);
+        // mouth
+        let message = '';
+        if (resizedDetections.length > 0) {
+            const landmarks = resizedDetections[0].landmarks;
+            const mouthOpenDist = getMouthOpenDist(landmarks);
+            message = mouthOpenDist>14 ? "✅ 检测到张嘴（活体）" : "🧍 嘴巴闭合中";
+            message += `,嘴巴开合距离: ${mouthOpenDist.toFixed(2)}`
+        } else {
+            message = "⏳ 正在检测人脸...";
+        }
+        logEl.innerText = message;
+        // face
+        logEl.innerText += resizedDetections.length > 0
+          ? `😀 检测到 ${resizedDetections.length} 张人脸`
+          : '😐 正在检测中...';
+      }, 500);
+    }
+
+    // 入口
+    window.addEventListener('DOMContentLoaded', main);
+  </script>
+</body>
+</html>
