@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Face Detection Demo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+    video, canvas {
+      width: 640px;
+      height: 480px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+    #log {
+      margin-top: 10px;
+      background: #eee;
+      padding: 10px;
+      width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 14px;
+      line-height: 1.4;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h2>Face-api.js</h2>
+  <video id="video" autoplay muted playsinline></video>
+  <canvas id="overlay"></canvas>
+  <div id="log">加载中...</div>
+
+  <!-- ✅ 引入 face-api.js -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <script>
+    const videoEl = document.getElementById('video');
+    const canvasEl = document.getElementById('overlay');
+    const logEl = document.getElementById('log');
+    const ctx = canvasEl.getContext('2d');
+
+    const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+
+    function getMouthOpenDist(landmarks) {
+        const topInnerLip = landmarks.getMouth()[13]; // Point 62
+        const bottomInnerLip = landmarks.getMouth()[19]; // Point 66
+        const verticalDist = Math.abs(topInnerLip.y - bottomInnerLip.y);
+        // return verticalDist > 12;  // 敏感些
+        // return verticalDist > 20;  // 更严格
+        // return verticalDist > 15; // 阈值可调整（比如 > 15 表示张开）
+        return verticalDist; // 适中阈值
+        /*getMouth() 返回 口部共 20 个 landmark 点（indices 48-67）
+index 13 ≈ point 62；index 19 ≈ point 66（视觉中心对齐）*/
+    }
+
+    // 闭眼检测函数
+    function getEyeOpenness(landmarks) {
+        // 左眼检测 (用户的左眼，在图像中是右侧)
+        const leftEye = landmarks.getLeftEye();
+        const leftEyeTop = leftEye[1]; // 上眼睑
+        const leftEyeBottom = leftEye[5]; // 下眼睑
+        const leftEyeDistance = Math.abs(leftEyeTop.y - leftEyeBottom.y);
+
+        // 右眼检测 (用户的右眼，在图像中是左侧)
+        const rightEye = landmarks.getRightEye();
+        const rightEyeTop = rightEye[1]; // 上眼睑
+        const rightEyeBottom = rightEye[5]; // 下眼睑
+        const rightEyeDistance = Math.abs(rightEyeTop.y - rightEyeBottom.y);
+
+        // 平均眼睛开合度
+        const avgEyeDistance = (leftEyeDistance + rightEyeDistance) / 2;
+        
+        return {
+            leftEyeDistance,
+            rightEyeDistance,
+            avgEyeDistance,
+            isEyesClosed: avgEyeDistance < 3.5 // 阈值可调整
+        };
+    }
+
+    // 头部姿态检测函数（包含左右转头和上下偏移）
+    function getHeadPose(landmarks) {
+        // 获取关键点
+        const noseTip = landmarks.getNose()[3]; // 鼻尖
+        const leftEyeCenter = landmarks.getLeftEye()[0]; // 左眼外角
+        const rightEyeCenter = landmarks.getRightEye()[3]; // 右眼外角
+        const leftMouth = landmarks.getMouth()[0]; // 嘴角左
+        const rightMouth = landmarks.getMouth()[6]; // 嘴角右
+        
+        // 获取更多关键点用于垂直偏移检测
+        const foreheadCenter = landmarks.getJawOutline()[7]; // 下巴中心点
+        const chinCenter = landmarks.getJawOutline()[8]; // 接近下巴的点
+        const eyebrowLeft = landmarks.getLeftEyeBrow()[2]; // 左眉毛中心
+        const eyebrowRight = landmarks.getRightEyeBrow()[2]; // 右眉毛中心
+
+        // 计算水平偏移（左右转头）
+        const eyeCenterX = (leftEyeCenter.x + rightEyeCenter.x) / 2;
+        const mouthCenterX = (leftMouth.x + rightMouth.x) / 2;
+        const faceCenterX = (eyeCenterX + mouthCenterX) / 2;
+        
+        // 计算鼻尖相对于面部中心的水平偏移
+        const horizontalOffset = noseTip.x - faceCenterX;
+        
+        // 计算垂直偏移（抬头低头）
+        const eyeCenterY = (leftEyeCenter.y + rightEyeCenter.y) / 2;
+        const mouthCenterY = (leftMouth.y + rightMouth.y) / 2;
+        const faceCenterY = (eyeCenterY + mouthCenterY) / 2;
+        
+        // 计算鼻尖相对于面部中心的垂直偏移
+        const verticalOffset = noseTip.y - faceCenterY;
+        
+        // 计算眉毛与眼睛的相对位置来辅助判断抬头低头
+        const eyebrowCenterY = (eyebrowLeft.y + eyebrowRight.y) / 2;
+        const eyeToEyebrowDist = Math.abs(eyeCenterY - eyebrowCenterY);
+        
+        // 计算面部高度比例来判断透视变化
+        const faceHeight = Math.abs(foreheadCenter.y - mouthCenterY);
+        
+        // 判断左右转头：鼻尖向左/右偏移超过阈值
+        const isLeftTurn = horizontalOffset < -8; // 阈值可调整
+        const isRightTurn = horizontalOffset > 8;
+        
+        // 判断抬头低头：基于垂直偏移和面部特征比例
+        const isHeadUp = verticalOffset < -6 ; // 抬头：鼻尖向上
+        const isHeadDown = verticalOffset > 6 ; // 低头：鼻尖向下
+        
+        // 综合判断头部方向
+        let headDirection = '';
+        if (isHeadUp && isLeftTurn) headDirection = '抬头向左';
+        else if (isHeadUp && isRightTurn) headDirection = '抬头向右';
+        else if (isHeadDown && isLeftTurn) headDirection = '低头向左';
+        else if (isHeadDown && isRightTurn) headDirection = '低头向右';
+        else if (isHeadUp) headDirection = '抬头';
+        else if (isHeadDown) headDirection = '低头';
+        else if (isLeftTurn) headDirection = '向左转头';
+        else if (isRightTurn) headDirection = '向右转头';
+        else headDirection = '正面';
+        
+        return {
+            horizontalOffset,
+            verticalOffset,
+            eyeToEyebrowDist,
+            faceHeight,
+            isLeftTurn,
+            isRightTurn,
+            isHeadUp,
+            isHeadDown,
+            headDirection
+        };
+    }
+
+
+    async function main() {
+      logEl.innerText = '📦 正在加载模型...';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      logEl.innerText = '✅ 模型加载完成';
+
+      // 开启摄像头
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoEl.srcObject = stream;
+      } catch (err) {
+        logEl.innerText = '❌ 无法访问摄像头: ' + err.message;
+        console.error(err);
+        return;
+      }
+
+      // 等待视频尺寸加载完成
+      videoEl.addEventListener('loadedmetadata', () => {
+        videoEl.width = videoEl.videoWidth;
+        videoEl.height = videoEl.videoHeight;
+
+        //确保 Canvas 元素的实际尺寸与 displaySize 匹配。
+        // faceapi.matchDimensions(canvasEl,  { width: videoEl.videoWidth, height: videoEl.videoHeight, }); 
+        canvasEl.width = videoEl.videoWidth;
+        canvasEl.height = videoEl.videoHeight;
+
+        logEl.innerText = '🎬 正在运行检测...';
+        startDetection();
+      });
+    }
+
+    function startDetection() {
+      const displaySize = {
+        width: videoEl.videoWidth,
+        height: videoEl.videoHeight,
+      };
+
+      setInterval(async () => {
+        const detections = await faceapi
+          .detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks();
+
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        faceapi.draw.drawDetections(canvasEl, resizedDetections);
+        faceapi.draw.drawFaceLandmarks(canvasEl, resizedDetections);
+        
+        // 检测结果
+        let message = '';
+        if (resizedDetections.length > 0) {
+            const landmarks = resizedDetections[0].landmarks;
+            
+            // 嘴巴检测
+            const mouthOpenDist = getMouthOpenDist(landmarks);
+            const mouthStatus = mouthOpenDist > 14 ? "张嘴" : "嘴巴闭合";
+            
+            // 眼睛检测
+            const eyeData = getEyeOpenness(landmarks);
+            const eyeStatus = eyeData.isEyesClosed ? "😴 闭眼检测到" : "👀 眼睛睁开";
+            
+            // 头部姿态检测（包含上下偏移）
+            const headPose = getHeadPose(landmarks);
+            let headStatusIcon = '';
+            if (headPose.isHeadUp) headStatusIcon = '⬆️';
+            else if (headPose.isHeadDown) headStatusIcon = '⬇️';
+            else if (headPose.isLeftTurn) headStatusIcon = '🔄';
+            else if (headPose.isRightTurn) headStatusIcon = '🔃';
+            else headStatusIcon = '😐';
+            
+            const headStatus = `${headStatusIcon} ${headPose.headDirection}检测到`;
+            
+            message = `😀 检测到人脸: ${mouthStatus} | ${eyeStatus} | ${headStatus}`;
+            message += `\n详细数据: 嘴距=${mouthOpenDist.toFixed(1)}; 
+            眼距=${eyeData.avgEyeDistance.toFixed(1)},leftEye:${eyeData.leftEyeDistance.toFixed(1)},rightEye:${eyeData.rightEyeDistance.toFixed(1)}; 
+            头部偏移: 水平=${headPose.horizontalOffset.toFixed(1)}, 垂直=${headPose.verticalOffset.toFixed(1)}, 眉眼距=${headPose.eyeToEyebrowDist.toFixed(1)}`;
+            
+        } else {
+            message = "⏳ 正在检测人脸...";
+        }
+        logEl.innerHTML = message.replace(/\n/g, '<br>');
+      }, 500);
+    }
+
+    // 入口
+    window.addEventListener('DOMContentLoaded', main);
+  </script>
+</body>
+</html>

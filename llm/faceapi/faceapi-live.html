@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Face Detection Demo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+    video, canvas {
+      width: 640px;
+      height: 480px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+    #log {
+      margin-top: 10px;
+      background: #eee;
+      padding: 10px;
+      width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 14px;
+      line-height: 1.4;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    #liveDetectBtn {
+      transition: background-color 0.3s ease;
+    }
+    
+    #liveDetectBtn:hover:not(:disabled) {
+      background: #0056b3 !important;
+    }
+    
+    #liveDetectBtn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h2>Face-api.js 人脸检测与活体检测</h2>
+  <video id="video" autoplay muted playsinline></video>
+  <button id="liveDetectBtn" onclick="startLiveDetection()" style="margin: 10px; padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">开始活体检测</button>
+  <div id="log">加载中...</div>
+
+  <!-- ✅ 引入 face-api.js -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <script>
+    const videoEl = document.getElementById('video');
+    const logEl = document.getElementById('log');
+
+    const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+
+    function getMouthOpenDist(landmarks) {
+        const topInnerLip = landmarks.getMouth()[13]; // Point 62
+        const bottomInnerLip = landmarks.getMouth()[19]; // Point 66
+        const verticalDist = Math.abs(topInnerLip.y - bottomInnerLip.y);
+        // return verticalDist > 12;  // 敏感些
+        // return verticalDist > 20;  // 更严格
+        // return verticalDist > 15; // 阈值可调整（比如 > 15 表示张开）
+        return verticalDist; // 适中阈值
+        /*getMouth() 返回 口部共 20 个 landmark 点（indices 48-67）
+index 13 ≈ point 62；index 19 ≈ point 66（视觉中心对齐）*/
+    }
+
+    // 头部姿态检测函数（包含左右转头、抬头、低头）
+    function getHeadPose(landmarks) {
+        // 获取关键点
+        const noseTip = landmarks.getNose()[3]; // 鼻尖
+        const noseTop = landmarks.getNose()[0]; // 鼻根
+        const leftEyeCenter = landmarks.getLeftEye()[0]; // 左眼外角
+        const rightEyeCenter = landmarks.getRightEye()[3]; // 右眼外角
+        const leftMouth = landmarks.getMouth()[0]; // 嘴角左
+        const rightMouth = landmarks.getMouth()[6]; // 嘴角右
+        const chinCenter = landmarks.getJawOutline()[8]; // 下巴中心点
+
+        // 计算水平偏移（左右转头）
+        const eyeCenterX = (leftEyeCenter.x + rightEyeCenter.x) / 2;
+        const mouthCenterX = (leftMouth.x + rightMouth.x) / 2;
+        const faceCenterX = (eyeCenterX + mouthCenterX) / 2;
+        
+        // 计算鼻尖相对于面部中心的偏移
+        const horizontalOffset = noseTip.x - faceCenterX;
+        
+        // 计算垂直偏移（抬头、低头）
+        const eyeCenterY = (leftEyeCenter.y + rightEyeCenter.y) / 2;
+        const mouthCenterY = (leftMouth.y + rightMouth.y) / 2;
+        const faceCenterY = (eyeCenterY + mouthCenterY) / 2;
+        
+        // 计算面部垂直比例来判断抬头低头
+        const faceHeight = Math.abs(chinCenter.y - eyeCenterY);
+        const noseToEyeRatio = Math.abs(noseTip.y - eyeCenterY) / faceHeight;
+        const noseToMouthRatio = Math.abs(noseTip.y - mouthCenterY) / faceHeight;
+        
+        // 使用鼻尖到眼部和嘴部的相对位置来判断垂直姿态
+        const verticalOffset = noseTip.y - faceCenterY;
+        
+        // 判断转头：由于摄像头镜像效果，需要反向判断
+        // 用户向左转头时，鼻尖在图像中向右偏移（正值）
+        // 用户向右转头时，鼻尖在图像中向左偏移（负值）
+        const isLeftTurn = horizontalOffset > 8; // 用户左转头，图像中鼻尖向右
+        const isRightTurn = horizontalOffset < -8; // 用户右转头，图像中鼻尖向左
+        
+        // 判断抬头低头
+        // 抬头时鼻尖相对于面部中心上移（y值减小），低头时下移（y值增大）
+        const isHeadUp = verticalOffset < -6; // 抬头阈值，可调整
+        const isHeadDown = verticalOffset > 6; // 低头阈值，可调整
+        
+        // 确定头部方向
+        let headDirection = '正面';
+        if (isLeftTurn) {
+            headDirection = '向左转头';
+        } else if (isRightTurn) {
+            headDirection = '向右转头';
+        } else if (isHeadUp) {
+            headDirection = '抬头';
+        } else if (isHeadDown) {
+            headDirection = '低头';
+        }
+        
+        return {
+            horizontalOffset,
+            verticalOffset,
+            noseToEyeRatio,
+            noseToMouthRatio,
+            isLeftTurn,
+            isRightTurn,
+            isHeadUp,
+            isHeadDown,
+            headDirection
+        };
+    }
+
+
+    // 活体检测函数
+    async function isLivePeople() {
+        // 1. 生成3个动作（从 左转头、右转头、张嘴、抬头、低头，随机3个）
+        const allActions = ['左转头', '右转头', '张嘴', '抬头', '低头'];
+        const actions = [];
+        
+        // 随机选择3个不同的动作
+        const shuffled = [...allActions].sort(() => 0.5 - Math.random());
+        for (let i = 0; i < 3; i++) {
+            actions.push(shuffled[i]);
+        }
+        
+        logEl.innerHTML = `🔄 活体检测开始，请依次完成以下动作：<br>${actions.join(' → ')} → 正对屏幕`;
+        
+        // 2. 依次让用户做这3个动作，如果用户3秒内没有做出动作就返回失败(false)
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+            
+            // 显示倒计时
+            for (let countdown = 3; countdown > 0; countdown--) {
+                logEl.innerHTML = `🎯 请执行动作 ${i + 1}/3: <strong>${action}</strong> (${countdown}秒后开始)`;
+                await sleep(1000);
+            }
+            
+            logEl.innerHTML = `🎯 正在检测动作 ${i + 1}/3: <strong>${action}</strong> (3秒内完成)`;
+            
+            const success = await waitForAction(action, 3000);
+            if (!success) {
+                logEl.innerHTML = `❌ 活体检测失败：动作"${action}"未在规定时间内完成`;
+                return false;
+            }
+            
+            logEl.innerHTML = `✅ 动作"${action}"完成！`;
+            await sleep(1000); // 短暂暂停
+        }
+        
+        // 3. 最后再加一个"正对屏幕"的动作，3秒内做出来就返回true
+        // 倒计时
+        for (let countdown = 3; countdown > 0; countdown--) {
+            logEl.innerHTML = `🎯 最后一步：<strong>正对屏幕</strong> (${countdown}秒后开始)`;
+            await sleep(1000);
+        }
+        
+        logEl.innerHTML = `🎯 最后一步：<strong>正对屏幕</strong> (3秒内完成)`;
+        const finalSuccess = await waitForAction('正对屏幕', 3000);
+        
+        if (finalSuccess) {
+            logEl.innerHTML = `🎉 活体检测成功！您是真人！`;
+            return true;
+        } else {
+            logEl.innerHTML = `❌ 活体检测失败：未能正对屏幕`;
+            return false;
+        }
+    }
+    
+    // 等待用户完成指定动作
+    async function waitForAction(action, timeoutMs) {
+        return new Promise((resolve) => {
+            const startTime = Date.now();
+            const checkInterval = setInterval(async () => {
+                const elapsed = Date.now() - startTime;
+                
+                // 超时检查
+                if (elapsed > timeoutMs) {
+                    clearInterval(checkInterval);
+                    resolve(false);
+                    return;
+                }
+                
+                // 检测当前人脸状态
+                const detections = await faceapi
+                    .detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks();
+                
+                if (detections.length === 0) {
+                    return; // 没有检测到人脸，继续等待
+                }
+                
+                const landmarks = detections[0].landmarks;
+                let actionCompleted = false;
+                
+                switch (action) {
+                    case '左转头':
+                        const leftHeadPose = getHeadPose(landmarks);
+                        actionCompleted = leftHeadPose.isLeftTurn;
+                        break;
+                        
+                    case '右转头':
+                        const rightHeadPose = getHeadPose(landmarks);
+                        actionCompleted = rightHeadPose.isRightTurn;
+                        break;
+                        
+                    case '抬头':
+                        const upHeadPose = getHeadPose(landmarks);
+                        actionCompleted = upHeadPose.isHeadUp;
+                        break;
+                        
+                    case '低头':
+                        const downHeadPose = getHeadPose(landmarks);
+                        actionCompleted = downHeadPose.isHeadDown;
+                        break;
+                        
+                    case '张嘴':
+                        const mouthDist = getMouthOpenDist(landmarks);
+                        actionCompleted = mouthDist > 14;
+                        break;
+                        
+                    case '正对屏幕':
+                        const frontHeadPose = getHeadPose(landmarks);
+                        actionCompleted = !frontHeadPose.isLeftTurn && !frontHeadPose.isRightTurn && !frontHeadPose.isHeadUp && !frontHeadPose.isHeadDown;
+                        break;
+                }
+                
+                if (actionCompleted) {
+                    clearInterval(checkInterval);
+                    resolve(true);
+                }
+            }, 100); // 每100ms检查一次
+        });
+    }
+    
+    // 辅助函数：延时
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    // 启动活体检测的按钮处理函数
+    async function startLiveDetection() {
+        const btn = document.getElementById('liveDetectBtn');
+        btn.disabled = true;
+        btn.innerText = '检测中...';
+        
+        try {
+            const result = await isLivePeople();
+            if (result) {
+                btn.style.background = '#28a745';
+                btn.innerText = '检测成功 ✅';
+            } else {
+                btn.style.background = '#dc3545';
+                btn.innerText = '检测失败 ❌';
+            }
+        } catch (error) {
+            logEl.innerHTML = `❌ 检测过程中出现错误: ${error.message}`;
+            btn.style.background = '#dc3545';
+            btn.innerText = '检测出错';
+        }
+        
+        // 3秒后恢复按钮
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.style.background = '#007bff';
+            btn.innerText = '开始活体检测';
+        }, 3000);
+    }
+
+    async function main() {
+      logEl.innerText = '📦 正在加载模型...';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      logEl.innerText = '✅ 模型加载完成';
+
+      // 开启摄像头
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoEl.srcObject = stream;
+      } catch (err) {
+        logEl.innerText = '❌ 无法访问摄像头: ' + err.message;
+        console.error(err);
+        return;
+      }
+
+      // 等待视频尺寸加载完成
+      videoEl.addEventListener('loadedmetadata', () => {
+        videoEl.width = videoEl.videoWidth;
+        videoEl.height = videoEl.videoHeight;
+      });
+    }
+
+    // 入口
+    window.addEventListener('DOMContentLoaded', main);
+  </script>
+</body>
+</html>
