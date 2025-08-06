@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face-API.js 人脸对比</title>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    img { max-width: 300px; margin: 10px; border: 2px solid #ccc; }
+    #result { font-size: 1.5em; font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Face-API.js - 对比两张照片是否为同一个人</h1>
+  
+  <div>
+    <img id="refImage" src="file:///opt/pics/lili.jpg" alt="参考图片">
+    <img id="queryImage" src="file://opt/pics/lili2.jpg" alt="待验证图片">
+  </div>
+  
+  <div id="result">正在加载模型并进行分析...</div>
+
+  <script>
+    async function runComparison() {
+      const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+      const resultDiv = document.getElementById('result');
+      // 1. 加载模型
+      resultDiv.innerText = '正在加载模型...';
+      await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+      
+      resultDiv.innerText = '模型加载完成，开始分析图片...';
+
+      // 2. 获取图片元素
+      const refImageEl = document.getElementById('refImage');
+      const queryImageEl = document.getElementById('queryImage');
+
+      // 3. 获取参考图片的描述符
+      const refResult = await faceapi
+        .detectSingleFace(refImageEl)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!refResult) {
+        resultDiv.innerText = '错误：参考图片中未检测到人脸！';
+        return;
+      }
+      
+      // 4. 获取待验证图片的描述符
+      const queryResult = await faceapi
+        .detectSingleFace(queryImageEl)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!queryResult) {
+        resultDiv.innerText = '错误：待验证图片中未检测到人脸！';
+        return;
+      }
+      
+      // 5. 计算距离并比较
+      const distance = faceapi.euclideanDistance(refResult.descriptor, queryResult.descriptor);
+      const threshold = 0.6;
+      
+      const areTheySame = distance < threshold;
+      
+      resultDiv.innerHTML = `
+        计算出的距离: ${distance.toFixed(4)}<br>
+        阈值: ${threshold}<br>
+        <strong>结论: ${areTheySame ? '是同一个人' : '不是同一个人'}</strong>
+      `;
+    }
+
+    // 确保图片加载完成后再运行
+    Promise.all([
+      document.getElementById('refImage').onload,
+      document.getElementById('queryImage').onload
+    ]).then(runComparison).catch(err => console.error(err));
+
+  </script>
+</body>
+</html>
